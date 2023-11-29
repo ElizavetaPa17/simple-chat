@@ -15,11 +15,29 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">.QWidget {
-	background-color: rgb(5, 35, 0);
-}</string>
+    <string notr="true"/>
    </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QStackedWidget" name="stackedMainWidget">
+      <property name="styleSheet">
+       <string notr="true">QWidget#stackedMainWidget {
+	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(0, 0, 0, 255), stop:0.106383 rgba(14, 8, 73, 255), stop:0.319149 rgba(18, 11, 92, 255), stop:0.497872 rgba(14, 12, 110, 255), stop:0.75 rgba(36, 6, 133, 255), stop:0.79 rgba(35, 3, 138, 255), stop:0.86 rgba(39, 0, 146, 255), stop:0.935 rgba(34, 23, 154, 255));
+}</string>
+      </property>
+      <widget class="QWidget" name="pageAuthentification">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page2"/>
+     </widget>
+    </item>
+   </layout>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -30,7 +48,6 @@
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

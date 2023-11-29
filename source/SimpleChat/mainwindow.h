@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "authentificationwidget.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -18,6 +20,9 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *main_window_ui_;
+    AuthentificationWidget* authent_widget_;
+
+    void setupDesign();
 };
 #endif // MAINWINDOW_H
