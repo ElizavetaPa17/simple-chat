@@ -1,12 +1,16 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#include "chatclient.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , main_window_ui_(new Ui::MainWindow)
     , authent_widget_(new AuthentificationWidget(this))
 {
     setupDesign();
+    ChatClient client;
+    client.sendLoginInfo("a", "a");
 }
 
 MainWindow::~MainWindow() {

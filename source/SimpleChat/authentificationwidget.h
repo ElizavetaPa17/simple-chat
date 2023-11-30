@@ -19,6 +19,8 @@ private:
 
 private slots:
     void slotSwitchPage(QWidget* child);
+    void slotSendLoginInfo();
+    void slotSendRegistrInfo();
 };
 
 #endif // AUTHENTIFICATIONWIDGET_H

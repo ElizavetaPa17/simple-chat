@@ -1,5 +1,5 @@
-#ifndef CHATSERVER_H
-#define CHATSERVER_H
+#ifndef CHATCLIENT_H
+#define CHATCLIENT_H
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -12,17 +12,19 @@
 #include "stdio.h"
 #include <errno.h>
 
-class ChatServer final {
+class ChatClient final {
 public:
-    ChatServer();
-    ~ChatServer();
+    ChatClient();
+    ~ChatClient();
+
+    bool sendLoginInfo(const char* username, const char* password);
 
 private:
     using socket_t = int;
 
-    socket_t server_socket_;
+    socket_t client_socket_;
 
     void setupAddrInfoHints(addrinfo& hints);
 };
 
-#endif // CHATSERVER_H
+#endif // CHATCLIENT_H

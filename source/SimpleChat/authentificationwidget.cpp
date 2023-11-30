@@ -1,5 +1,7 @@
 #include "authentificationwidget.h"
 
+#include "QTimer"
+
 AuthentificationWidget::AuthentificationWidget(QWidget* parent)
     : QWidget(parent)
     , authent_form_ui_(new Ui::AuthentificationForm)
@@ -14,7 +16,10 @@ AuthentificationWidget::~AuthentificationWidget() {
 
 void AuthentificationWidget::setupConnection() {
     connect(authent_form_ui_->registerLabel, &ClickableLabel::clicked, this, &AuthentificationWidget::slotSwitchPage);
-    connect(authent_form_ui_->loginLabel, &ClickableLabel::clicked, this, &AuthentificationWidget::slotSwitchPage);
+    connect(authent_form_ui_->loginLabel,   &ClickableLabel::clicked, this, &AuthentificationWidget::slotSwitchPage);
+
+    connect(authent_form_ui_->loginButton,   &QPushButton::clicked, this, &AuthentificationWidget::slotSendLoginInfo);
+    connect(authent_form_ui_->registerButton, &QPushButton::clicked, this, &AuthentificationWidget::slotSendRegistrInfo);
 }
 
 void AuthentificationWidget::setupDesign() {
@@ -24,7 +29,10 @@ void AuthentificationWidget::setupDesign() {
     QPixmap pixmap;
     pixmap.load(":../resources/icon/label.png");
     authent_form_ui_->logoLoginLabel->setPixmap(pixmap);
-    authent_form_ui_->logoRegistrLabel->setPixmap(pixmap);
+    authent_form_ui_->logoRegisterLabel->setPixmap(pixmap);
+
+    authent_form_ui_->authLoginErrorLabel->hide();
+    authent_form_ui_->authRegisterErrorLabel->hide();
 }
 
 void AuthentificationWidget::slotSwitchPage(QWidget* child) {
@@ -32,5 +40,35 @@ void AuthentificationWidget::slotSwitchPage(QWidget* child) {
         authent_form_ui_->stackedAuthWidget->setCurrentIndex(0);
     } else {
         authent_form_ui_->stackedAuthWidget->setCurrentIndex(1);
+    }
+}
+
+void AuthentificationWidget::slotSendLoginInfo() {
+    if (authent_form_ui_->usrnameLoginLineedit->text().isEmpty() ||
+        authent_form_ui_->passRegisterLineedit->text().isEmpty())
+    {
+        authent_form_ui_->authLoginErrorLabel->setText("Error. All fields must be filled in.");
+        authent_form_ui_->authLoginErrorLabel->show();
+        QTimer::singleShot(3000, authent_form_ui_->authLoginErrorLabel, &QLabel::hide);
+        return;
+    }
+}
+
+void AuthentificationWidget::slotSendRegistrInfo() {
+    if (authent_form_ui_->confpassRegisterLineedit->text().isEmpty() ||
+        authent_form_ui_->passRegisterLineedit->text().isEmpty()     ||
+        authent_form_ui_->usrnameRegisterLineedit->text().isEmpty())
+    {
+        authent_form_ui_->authRegisterErrorLabel->setText("Error. All fields must be filled in.");
+        authent_form_ui_->authRegisterErrorLabel->show();
+        QTimer::singleShot(3000, authent_form_ui_->authRegisterErrorLabel, &QLabel::hide);
+        return;
+    }
+
+    if (authent_form_ui_->confpassRegisterLineedit->text() != authent_form_ui_->passRegisterLineedit->text()) {
+        authent_form_ui_->authRegisterErrorLabel->setText("Error. Passwords don't match.");
+        authent_form_ui_->authRegisterErrorLabel->show();
+        QTimer::singleShot(3000, authent_form_ui_->authRegisterErrorLabel, &QLabel::hide);
+        return;
     }
 }

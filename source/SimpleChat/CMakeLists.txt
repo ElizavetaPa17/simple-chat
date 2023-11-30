@@ -32,6 +32,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../../resources/resources.qrc
         authentificationform.ui authentificationwidget.h authentificationwidget.cpp
         clickablelabel.h clickablelabel.cpp
+        chatclient.h chatclient.cpp
+        constants.h constants.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SimpleChat APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
