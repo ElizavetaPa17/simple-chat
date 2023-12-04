@@ -21,6 +21,9 @@ private slots:
     void slotSwitchPage(QWidget* child);
     void slotSendLoginInfo();
     void slotSendRegistrInfo();
+
+signals:
+    void sgnlSendAuthInfo(const char* username, const char* password, bool auth_type);
 };
 
 #endif // AUTHENTIFICATIONWIDGET_H

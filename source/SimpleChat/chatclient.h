@@ -12,18 +12,19 @@
 #include "stdio.h"
 #include <errno.h>
 
+#include "constants.h"
+
 class ChatClient final {
 public:
     ChatClient();
     ~ChatClient();
 
-    bool sendLoginInfo(const char* username, const char* password);
+    bool sendAuthInfo(const char* username, const char* password, int auth_type);
 
 private:
     using socket_t = int;
 
     socket_t client_socket_;
-
     void setupAddrInfoHints(addrinfo& hints);
 };
 

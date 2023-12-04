@@ -2,11 +2,11 @@
 
 #include <QApplication>
 
-#include "chatserver.h"
+#include "dbutility.h"
 
 int main(int argc, char *argv[])
 {
-    ChatServer chat_server_;
+    DbUtility Ut();
 
     QApplication a(argc, argv);
     MainWindow w;

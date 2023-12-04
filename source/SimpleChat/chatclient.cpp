@@ -23,6 +23,7 @@ ChatClient::ChatClient()
         // return error;
     }
 
+    fprintf(stdout, "Connecting to the remote address...\n");
     if (connect(client_socket_, remote_address->ai_addr, remote_address->ai_addrlen)) {
         fprintf(stderr, "%s%d%c", "Failed to connect to the remote address: ", errno, '\n');
         // return error;
@@ -36,18 +37,24 @@ ChatClient::~ChatClient() {
     close(client_socket_);
 }
 
-bool ChatClient::sendLoginInfo(const char* username, const char* password) {
+bool ChatClient::sendAuthInfo(const char* username, const char* password, int auth_type) {
     QString message;
-    message += "TYPE: "       + QString(LOGIN_CONNECTION)               + "\n";
+    if (auth_type == LOGIN) {
+        message += "TYPE: " + QString(LOGIN_CONNECTION) + "\n";
+    } else if (auth_type == RGSTR) {
+        message += "TYPE: " + QString(RGSTR_CONNECTION) + "\n";
+    } else {
+        fprintf(stderr, "Failed to send authentification information: unknown type\n");
+    }
+
     message += "DATE: "       + QDateTime::currentDateTime().toString() + "\n";
-    message += "CONNECTION: " + QString(KEEP_ALIVE_CONNECTION)          + "\n";
     message += "DATA: \n";
     message += "Username: "   + QString(username)                       + "\n";
-    message += "Password: "   + QString(password);
+    message += "Password: "   + QString(password) + "\n";
 
     fprintf(stdout, "Sending login request...\n");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), NULL) < 0) {
-        fprintf(stderr, "%s%d%c", "Sending login information failed: ", errno, '\n');
+        fprintf(stderr, "%s%d\n", "Sending login information failed: ", errno);
         return false;
     }
 

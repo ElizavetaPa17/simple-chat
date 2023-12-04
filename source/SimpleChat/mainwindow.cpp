@@ -1,16 +1,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-#include "chatclient.h"
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , main_window_ui_(new Ui::MainWindow)
     , authent_widget_(new AuthentificationWidget(this))
 {
     setupDesign();
-    ChatClient client;
-    client.sendLoginInfo("a", "a");
+    setupConnection();
 }
 
 MainWindow::~MainWindow() {
@@ -27,4 +24,16 @@ void MainWindow::setupDesign() {
 
     main_window_ui_->verticalLayout->addWidget(authent_widget_);
     main_window_ui_->stackedMainWidget->setCurrentIndex(0);
+
+    QPixmap pixmap;
+    pixmap.load(":../resources/icon/logo.png");
+    main_window_ui_->mainWindowLogoLabel->setPixmap(pixmap);
+}
+
+void MainWindow::setupConnection() {
+    connect(authent_widget_, &AuthentificationWidget::sgnlSendAuthInfo, this, &MainWindow::sltSendAuthInfo);
+}
+
+void MainWindow::sltSendAuthInfo(const char* username, const char* password, int auth_type) {
+    client_.sendAuthInfo(username, password, auth_type);
 }
