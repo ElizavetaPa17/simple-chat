@@ -7,9 +7,19 @@ class DbUtility
 {
 public:
     DbUtility();
+    ~DbUtility();
+
+    bool init();
+    /*bool addUser();
+    bool checkUserAuthentification;
+    bool checkUserMessages();
+    */
 
 private:
-    MYSQL sql_handle_;
+   MYSQL* sql_handle_;
+
+   void closeConnection();
+   void closeConnectionWithError(const char* message);
 };
 
 #endif // DBUTILITY_H

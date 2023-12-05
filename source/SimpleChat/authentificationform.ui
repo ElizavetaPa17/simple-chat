@@ -337,6 +337,9 @@ QLineEdit:hover {
 	border-right: none;
 }</string>
          </property>
+         <property name="maxLength">
+          <number>20</number>
+         </property>
          <property name="placeholderText">
           <string>Username</string>
          </property>
@@ -392,6 +395,9 @@ QLineEdit:hover {
 	border-right: none;
 }</string>
          </property>
+         <property name="maxLength">
+          <number>20</number>
+         </property>
          <property name="echoMode">
           <enum>QLineEdit::Password</enum>
          </property>
@@ -421,6 +427,9 @@ QLineEdit:hover {
 	border-left: none;
 	border-right: none;
 }</string>
+         </property>
+         <property name="maxLength">
+          <number>20</number>
          </property>
          <property name="echoMode">
           <enum>QLineEdit::Password</enum>
