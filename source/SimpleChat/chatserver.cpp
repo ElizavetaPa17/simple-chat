@@ -5,12 +5,16 @@
 ChatServer::ChatServer()
     : server_socket_(-1)
 {
+    if (!database_.init()) {
+        exit(EXIT_FAILURE);
+    }
+
     setupServer();
 }
 
 ChatServer::~ChatServer() {
-    fprintf(stdout, "Closing the server socket...\n");
-    close(server_socket_);
+    fprintf(stdout, "S: Closing the server socket...\n");
+    closeConnection();
 }
 
 void ChatServer::setupAddrInfoHints(addrinfo& hints) {
@@ -20,32 +24,36 @@ void ChatServer::setupAddrInfoHints(addrinfo& hints) {
     hints.ai_flags = AI_PASSIVE;
 }
 
+void ChatServer::closeConnection() {
+    close(server_socket_);
+}
+
 void ChatServer::setupServer() {
-    fprintf(stdout, "Configuring the server...\n");
+    fprintf(stdout, "S: Configuring the server...\n");
     addrinfo hints;
     setupAddrInfoHints(hints);
 
     addrinfo* server_address;
     getaddrinfo(SERVER_ADDRESS, SERVER_SERVICE, &hints, &server_address);
 
-    fprintf(stdout, "Creating a server socket...\n");
+    fprintf(stdout, "S: Creating a server socket...\n");
     server_socket_ = socket(server_address->ai_family, server_address->ai_socktype, server_address->ai_protocol);
     if (!ISVALIDSOCKET(server_socket_)) {
-        fprintf(stderr, "%s%d%c", "Failed to create the server socket: ", errno, '\n');
+        fprintf(stderr, "%s%d%c", "S: Failed to create the server socket: ", errno, '\n');
         exit(EXIT_FAILURE);
     }
 
-    fprintf(stdout, "Binding the server socket to local address...\n");
+    fprintf(stdout, "S: Binding the server socket to local address...\n");
     if (bind(server_socket_, server_address->ai_addr, server_address->ai_addrlen)) {
-        fprintf(stderr, "%s%d%c","Failed to bind the server socket: ", errno, '\n');
+        fprintf(stderr, "%s%d%c","S: Failed to bind the server socket: ", errno, '\n');
         exit(EXIT_FAILURE);
     }
 
     freeaddrinfo(server_address);
 
-    fprintf(stdout, "Start listening...\n");
+    fprintf(stdout, "S: Start listening...\n");
     if (listen(server_socket_, 10)) {
-        fprintf(stderr, "%s%d%c", "Failed to listen: ", errno, '\n');
+        fprintf(stderr, "%s%d%c", "S: Failed to listen: ", errno, '\n');
         exit(EXIT_FAILURE);
     }
 }
@@ -56,11 +64,12 @@ void ChatServer::startAcceptConnection() {
     FD_ZERO(&master);
     FD_SET(max_socket, &master);
 
-    fprintf(stdout, "Start accepting new connections...\n");
+    fprintf(stdout, "S: Start accepting new connections.\n");
 
     for (fd_set reads = master, writes = master; true; reads = master, writes = master) {
         if (select(max_socket+1, &reads, NULL, NULL, NULL) < 0) {
-            fprintf(stderr, "%s%d%c", "Failed to select: ", errno, 'c');
+            fprintf(stderr, "%s%d\n", "S: Failed to select: ", errno);
+            exit(EXIT_FAILURE);
         } else {
             for (socket_t sngle_socket = 1; sngle_socket <= max_socket; ++sngle_socket) {
                 if (FD_ISSET(sngle_socket, &reads)) {
@@ -81,30 +90,71 @@ void ChatServer::handleReadSocket(const socket_t sngle_socket, socket_t& max_soc
     } else {
         const auto& client = clients_.find(sngle_socket);
         char buffer[RECV_SERVER_BUFFER_SIZE];
-        // ЦИКЛ СЧИТЫВАНИЯ, А ТО ПОЛУЧАЕТСЯ 1 ПОРЦИЯ!!
-        if (recv(client->first, buffer, sizeof(buffer), 0) > 0) {
-            printf("%s", buffer);
+        size_t read_bytes = 0;
+        if ((read_bytes = recv(client->first, buffer, sizeof(buffer), 0)) > 0) {
+            parseReadData(buffer, read_bytes);
         } else {
-            printf("Closing connection with the client: %s\n", getClientAddress(client->second));
+            printf("S: Closing connection with the client: %s\n", getClientAddress(client->second));
             clients_.erase(client->first);
             FD_CLR(client->first, &master);
         }
     }
 }
 void ChatServer::handleWriteSocket(const socket_t sngl_socket) {
-
+  
 }
 
 typename ChatServer::socket_t ChatServer::handleNewConnection() {
     ClientInfo client_info;
     socket_t new_socket = accept(server_socket_, (sockaddr*) &client_info.address, &client_info.address_length);
     if (!ISVALIDSOCKET(new_socket)) {
-        fprintf(stderr, "%s%d\n", "Accept failed: ", errno);
+        fprintf(stderr, "%s%d\n", "S: Accept failed: ", errno);
         return INVALID_SOCKET;
     } else {
-        fprintf(stdout, "%s%s\n", "Accept new connection. Client address: ", getClientAddress(client_info));
+        fprintf(stdout, "%s%s\n", "S: Accept new connection. Client address: ", getClientAddress(client_info));
         clients_.insert({ new_socket, client_info });
         return new_socket;
+    }
+}
+
+void ChatServer::parseReadData(char* data, size_t data_sz) {
+    char* p = data;
+    if ((p = strstr(data, LOGIN_CONNECTION))) {
+        const char* usr = NULL, *pswrd = NULL;
+        size_t usr_sz = 0, pswrd_sz = 0;
+        if ((p = strstr(p, "Username: "))) {
+            usr = p + sizeof("Username:");
+            p = strstr(p, "\n");
+            *p = '\0';
+            usr_sz = p - usr;
+            printf("%ld\n", usr_sz);
+        } else {
+            fprintf(stdout, "S: Receive wrong LOGIN request format.\n");
+            return;
+        }
+        
+        ++p;
+        if ((p = strstr(p, "Password: "))) {
+            pswrd = p + sizeof("Password:");
+            p = strstr(p, "\n");
+            *p = '\0';
+            pswrd_sz = p - pswrd;
+            printf("%ld\n", pswrd_sz);
+        } else {
+            fprintf(stdout, "S: Receive wrong LOGIN request format.\n");
+            return;
+        }
+
+        char username[21]{}, password[21]{};
+        memcpy(username, usr, usr_sz);
+        memcpy(password, pswrd, pswrd_sz);
+        printf("username: %s, password: %s\n", username, password);
+
+       // database_.addUser(username, password);
+    } else if ((p = strstr(data, RGSTR_CONNECTION))) {
+
+    } else {
+        fprintf(stdout, "S: Receive unknown type of connection\n");
     }
 }
 

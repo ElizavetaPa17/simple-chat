@@ -1,6 +1,14 @@
 #include "chatserver.h"
 
+ChatServer chat_server;
+
+void closeServer();
+
 int main() {
-    ChatServer chat_server;
     chat_server.startAcceptConnection();
+    atexit(closeServer);
+}
+
+void closeServer() {
+    chat_server.closeConnection();
 }

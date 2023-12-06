@@ -7,12 +7,14 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-#include "stdlib.h"
-#include <cstring>
-#include "stdio.h"
+#include <string.h>
 #include <errno.h>
+#include "stdlib.h"
+#include "stdio.h"
 
 #include <map>
+
+#include "dbutility.h"
 
 class ChatServer final {
 public:
@@ -20,6 +22,7 @@ public:
     ~ChatServer();
 
     void startAcceptConnection();
+    void closeConnection();
 
 private:
     using socket_t = int;
@@ -31,6 +34,7 @@ private:
 
     socket_t server_socket_;
     std::map<socket_t, ClientInfo> clients_;
+    DbUtility database_;
 
     void setupServer();
     void setupAddrInfoHints(addrinfo& hints);
@@ -39,6 +43,7 @@ private:
     void handleWriteSocket(const socket_t sngle_socket);
 
     socket_t handleNewConnection();
+    void     parseReadData(char* data, size_t data_sz);
 
     const char* getClientAddress(const ClientInfo& client_info);
 };

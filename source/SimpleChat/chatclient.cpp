@@ -40,9 +40,9 @@ ChatClient::~ChatClient() {
 bool ChatClient::sendAuthInfo(const char* username, const char* password, int auth_type) {
     QString message;
     if (auth_type == LOGIN) {
-        message += "TYPE: " + QString(LOGIN_CONNECTION) + "\n";
+        message += QString(LOGIN_CONNECTION) + "\n";
     } else if (auth_type == RGSTR) {
-        message += "TYPE: " + QString(RGSTR_CONNECTION) + "\n";
+        message += QString(RGSTR_CONNECTION) + "\n";
     } else {
         fprintf(stderr, "Failed to send authentification information: unknown type\n");
     }
