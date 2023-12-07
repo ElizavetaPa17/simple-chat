@@ -15,6 +15,7 @@
 #include <map>
 
 #include "dbutility.h"
+#include "constants.h"
 
 class ChatServer final {
 public:
@@ -45,14 +46,14 @@ private:
     void handleWriteSocket(const socket_t sngle_socket);
 
     socket_t handleNewConnection();
-    void     parseReadData(char* data, ClientInfo& client);
-    void     handleLoginConnection(char* data, ClientInfo& client);
-    void     handleRegistrConnection(char* data, ClientInfo& client);
+    void     parseReadData(char* data, socket_t sngle_socket, ClientInfo& client);
+    void     handleLoginConnection(char* data, socket_t sngle_socket, ClientInfo& client);
+    void     handleRegistrConnection(char* data, socket_t sngle_socket, ClientInfo& client);
 
-    bool sendSuccessRespond(const char* respond);
+    bool sendRespond(const char* respond, RespondCode res, socket_t sngle_socket);
 
     const char* getClientAddress(const ClientInfo& client_info);
-    bool getAuthentInfo(char* data, ClientInfo& client);
+    bool        getAuthentInfo(char* data, ClientInfo& client);
 };
 
 #endif // CHATSERVER_H

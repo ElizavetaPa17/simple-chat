@@ -23,9 +23,11 @@ public:
 
 private:
     using socket_t = int;
+    char input_buffer[CLIENT_RECEIVE_BUFFER_SZ];
 
     socket_t client_socket_;
     void setupAddrInfoHints(addrinfo& hints);
+    void parseReadData(const char* );
 };
 
 #endif // CHATCLIENT_H
