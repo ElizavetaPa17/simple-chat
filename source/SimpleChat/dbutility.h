@@ -11,15 +11,23 @@ public:
     ~DbUtility();
 
     bool init();
+
     bool addUser(const char* username, const char* password);
+
+    bool isUserExist(const char* username, const char* password);
+    bool isUsernameExist(const char* username);
+    
     //bool checkUserAuthentification;
     //bool checkUserMessages();
 
 private:
-   MYSQL* sql_handle_;
+    MYSQL* sql_handle_;
+   
+    bool checkUsersTableExistance();
+    bool setupNewDatabase();
 
-   void closeConnection();
-   void closeConnectionWithError(const char* message);
+    void closeConnection();
+    void closeConnectionWithError(const char* message);
 };
 
 #endif // DBUTILITY_H

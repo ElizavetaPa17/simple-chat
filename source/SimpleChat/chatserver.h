@@ -30,6 +30,8 @@ private:
     struct ClientInfo {
         sockaddr_storage address;
         socklen_t        address_length = sizeof(address);
+        char username[20]{};
+        char password[20]{};
     };
 
     socket_t server_socket_;
@@ -43,9 +45,14 @@ private:
     void handleWriteSocket(const socket_t sngle_socket);
 
     socket_t handleNewConnection();
-    void     parseReadData(char* data, size_t data_sz);
+    void     parseReadData(char* data, ClientInfo& client);
+    void     handleLoginConnection(char* data, ClientInfo& client);
+    void     handleRegistrConnection(char* data, ClientInfo& client);
+
+    bool sendSuccessRespond(const char* respond);
 
     const char* getClientAddress(const ClientInfo& client_info);
+    bool getAuthentInfo(char* data, ClientInfo& client);
 };
 
 #endif // CHATSERVER_H

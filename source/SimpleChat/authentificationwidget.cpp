@@ -76,6 +76,6 @@ void AuthentificationWidget::slotSendRegistrInfo() {
         return;
     }
 
-    emit sgnlSendAuthInfo(authent_form_ui_->passRegisterLineedit->text().toUtf8().toStdString().c_str(),
-                          authent_form_ui_->usrnameRegisterLineedit->text().toUtf8().toStdString().c_str(), RGSTR);
+    emit sgnlSendAuthInfo(authent_form_ui_->usrnameRegisterLineedit->text().toUtf8().toStdString().c_str(),
+                          authent_form_ui_->passRegisterLineedit->text().toUtf8().toStdString().c_str(), RGSTR);
 }

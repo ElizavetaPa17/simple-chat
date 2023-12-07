@@ -90,9 +90,8 @@ void ChatServer::handleReadSocket(const socket_t sngle_socket, socket_t& max_soc
     } else {
         const auto& client = clients_.find(sngle_socket);
         char buffer[RECV_SERVER_BUFFER_SIZE];
-        size_t read_bytes = 0;
-        if ((read_bytes = recv(client->first, buffer, sizeof(buffer), 0)) > 0) {
-            parseReadData(buffer, read_bytes);
+        if ((recv(client->first, buffer, sizeof(buffer), 0)) > 0) {
+            parseReadData(buffer, client->second);
         } else {
             printf("S: Closing connection with the client: %s\n", getClientAddress(client->second));
             clients_.erase(client->first);
@@ -117,45 +116,83 @@ typename ChatServer::socket_t ChatServer::handleNewConnection() {
     }
 }
 
-void ChatServer::parseReadData(char* data, size_t data_sz) {
+void ChatServer::parseReadData(char* data, ClientInfo& client) {
     char* p = data;
     if ((p = strstr(data, LOGIN_CONNECTION))) {
-        const char* usr = NULL, *pswrd = NULL;
-        size_t usr_sz = 0, pswrd_sz = 0;
-        if ((p = strstr(p, "Username: "))) {
-            usr = p + sizeof("Username:");
-            p = strstr(p, "\n");
-            *p = '\0';
-            usr_sz = p - usr;
-            printf("%ld\n", usr_sz);
-        } else {
-            fprintf(stdout, "S: Receive wrong LOGIN request format.\n");
-            return;
-        }
-        
-        ++p;
-        if ((p = strstr(p, "Password: "))) {
-            pswrd = p + sizeof("Password:");
-            p = strstr(p, "\n");
-            *p = '\0';
-            pswrd_sz = p - pswrd;
-            printf("%ld\n", pswrd_sz);
-        } else {
-            fprintf(stdout, "S: Receive wrong LOGIN request format.\n");
-            return;
-        }
-
-        char username[21]{}, password[21]{};
-        memcpy(username, usr, usr_sz);
-        memcpy(password, pswrd, pswrd_sz);
-        printf("username: %s, password: %s\n", username, password);
-
-       // database_.addUser(username, password);
+        handleLoginConnection(data, client);
     } else if ((p = strstr(data, RGSTR_CONNECTION))) {
-
+        handleRegistrConnection(data, client);
     } else {
         fprintf(stdout, "S: Receive unknown type of connection\n");
     }
+}
+
+void ChatServer::handleLoginConnection(char* data, ClientInfo& client) {
+    if (!getAuthentInfo(data, client)) {
+        fprintf(stderr, "S: Failed to get authentification info about the client: %s\n", 
+                         getClientAddress(client));
+    } else {
+        fprintf(stdout, "S: Trying to login the client...\n");
+        if (database_.isUserExist(client.username, client.password)) {
+            fprintf(stdout, "Successfull client login.\n");
+        } else {
+            fprintf(stdout, "S: Failed to login the client.\n");
+        }
+    }
+}
+
+void ChatServer::handleRegistrConnection(char* data, ClientInfo& client) {
+    if (!getAuthentInfo(data, client)) {
+        fprintf(stderr, "S: Failed to get authentification info about the client: %s\n", 
+                         getClientAddress(client));
+    } else {
+        fprintf(stdout, "S: Trying to register the client...\n");
+        if (!database_.addUser(client.username, client.password)) {
+            // reset client username and password
+            memset(client.username, '\0', sizeof(client.username));
+            memset(client.password, '\0', sizeof(client.password));
+        }
+    }
+}
+
+bool ChatServer::sendSuccessRespond(const char* respond) {
+    size_t rspnd_sz = strlen(respond);
+    if (send(server_socket_, respond, rspnd_sz, 0) < 0) {
+        fprintf(stderr, "S: Failed to send success respond: %d\n", errno);
+        return false;
+    }
+
+    return true;
+}
+
+bool ChatServer::getAuthentInfo(char* data, ClientInfo& client) {
+    char* p = data;
+    const char* usr = NULL, *pswrd = NULL;
+    size_t usr_sz = 0, pswrd_sz = 0;
+    if ((p = strstr(p, "Username: "))) {
+        usr = p + sizeof("Username:");
+        p = strstr(p, "\n");
+       *p = '\0';
+        usr_sz = p - usr;
+    } else {
+        fprintf(stdout, "S: Receive wrong authentification request format.\n");
+        return false;
+    }
+        
+    ++p;
+    if ((p = strstr(p, "Password: "))) {
+        pswrd = p + sizeof("Password:");
+        p = strstr(p, "\n");
+       *p = '\0';
+        pswrd_sz = p - pswrd;
+    } else {
+        fprintf(stdout, "S: Receive wrong authentification request format.\n");
+        return false;
+    }
+
+    memcpy(client.username, usr, usr_sz);
+    memcpy(client.password, pswrd, pswrd_sz);
+    return true;
 }
 
 const char* ChatServer::getClientAddress(const ClientInfo& client_info) {
