@@ -148,6 +148,7 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
                          getClientAddress(client));
     } else {
         fprintf(stdout, "S: Trying to register the client...\n");
+        fprintf(stdout, "%ld\n", strlen(client.username));
         if (!database_.addUser(client.username, client.password)) {
             // reset client username and password
             memset(client.username, '\0', sizeof(client.username));

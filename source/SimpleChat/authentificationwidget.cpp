@@ -79,3 +79,15 @@ void AuthentificationWidget::slotSendRegistrInfo() {
     emit sgnlSendAuthInfo(authent_form_ui_->usrnameRegisterLineedit->text().toUtf8().toStdString().c_str(),
                           authent_form_ui_->passRegisterLineedit->text().toUtf8().toStdString().c_str(), RGSTR);
 }
+
+void AuthentificationWidget::handleFailedAuthentification() {
+    if (authent_form_ui_->stackedAuthWidget->currentIndex() == 0) {
+        authent_form_ui_->authLoginErrorLabel->setText("Failed to login. Check your data.");
+        authent_form_ui_->authLoginErrorLabel->show();
+        QTimer::singleShot(5000, authent_form_ui_->authLoginErrorLabel, &QLabel::hide);
+    } else {
+        authent_form_ui_->authRegisterErrorLabel->setText("Failed to register. Check your data.");
+        authent_form_ui_->authRegisterErrorLabel->show();
+        QTimer::singleShot(5000, authent_form_ui_->authRegisterErrorLabel, &QLabel::hide);
+    }
+}

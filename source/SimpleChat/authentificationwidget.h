@@ -11,6 +11,8 @@ public:
     AuthentificationWidget(QWidget* parent = nullptr);
     ~AuthentificationWidget();
 
+    void handleFailedAuthentification();
+
 private:
     Ui::AuthentificationForm* authent_form_ui_;
 

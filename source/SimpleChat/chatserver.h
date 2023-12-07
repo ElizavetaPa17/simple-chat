@@ -31,8 +31,8 @@ private:
     struct ClientInfo {
         sockaddr_storage address;
         socklen_t        address_length = sizeof(address);
-        char username[20]{};
-        char password[20]{};
+        char username[21]{};
+        char password[21]{};
     };
 
     socket_t server_socket_;

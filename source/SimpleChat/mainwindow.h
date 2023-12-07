@@ -29,7 +29,11 @@ private:
     void setupDesign();
     void setupConnection();
 
+    void handleSuccessAuthentification(int auth_type);
+    void handleFailedAuthentification();
+
 private slots:
     void sltSendAuthInfo(const char* username, const char* password, int auth_type);
+    void sltSwitchPage();
 };
 #endif // MAINWINDOW_H

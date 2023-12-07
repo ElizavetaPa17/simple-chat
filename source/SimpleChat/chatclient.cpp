@@ -37,7 +37,7 @@ ChatClient::~ChatClient() {
     close(client_socket_);
 }
 
-bool ChatClient::sendAuthInfo(const char* username, const char* password, int auth_type) {
+bool ChatClient::authorizeUser(const char* username, const char* password, int auth_type) {
     QString message;
     if (auth_type == LOGIN) {
         message += QString(LOGIN_CONNECTION) + "\n";
@@ -57,17 +57,38 @@ bool ChatClient::sendAuthInfo(const char* username, const char* password, int au
         fprintf(stderr, "%s%d\n", "C: Sending login information failed: ", errno);
         return false;
     } else {
-        if (recv(client_socket_, input_buffer, sizeof(input_buffer), 0) < 0) {
-            fprintf(stderr, "C: Failed to recieve respond information\n");
-        } else {
-            fprintf(stdout, "C: Received: %s", input_buffer);
-        }
+        memcpy(client_info_.username, username, sizeof(client_info_.username));
+        return getAuthRespond();
     }
+}
 
-    return true;
+const char* ChatClient::getClientUsername() {
+    if (strlen(client_info_.username) == 0) {
+        return NULL;
+    } else {
+        return client_info_.username;
+    }
 }
 
 void ChatClient::setupAddrInfoHints(addrinfo& hints) {
     memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
+}
+
+bool ChatClient::getAuthRespond() {
+    if (recv(client_socket_, input_buffer_, sizeof(input_buffer_), 0) < 0) {
+        fprintf(stderr, "C: Failed to recieve respond information\n");
+        return false;
+    } else {
+        fprintf(stdout, "C: Received respond from the server: %s", input_buffer_);
+        if (!strcmp(input_buffer_, "CODE: OK\n")) {
+            return true;
+        } else if (!strcmp(input_buffer_, "CODE: AUTH_ERROR\n")){
+            memset(client_info_.username, 0, sizeof(client_info_.username));
+            return false;
+        } else {
+            memset(client_info_.username, 0, sizeof(client_info_.username));
+            return false;
+        }
+    }
 }
