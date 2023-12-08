@@ -23,7 +23,8 @@ public:
 private:
     MYSQL* sql_handle_;
    
-    bool checkUsersTableExistance();
+    bool setupUsersTable();
+    bool setupMsgsTable();
     bool setupNewDatabase();
 
     void closeConnection();
