@@ -70,6 +70,22 @@ const char* ChatClient::getClientUsername() {
     }
 }
 
+bool ChatClient::findUser(const char* username) {
+    QString message;
+    message += QString(FIND_CONNECTION) + "\n";
+    message += "DATE: " + QDateTime::currentDateTime().toString() + "\n";
+    message += "DATA: \n";
+    message += "Username: " + QString(username)                   + "\n";
+
+    fprintf(stdout, "C: Sending find request...\n");
+    if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
+        fprintf(stderr, "%s%d\n", "C: Sending find request failed: ", errno);
+        return false;
+    } else {
+        return getFindRespond();
+    }
+}
+
 void ChatClient::setupAddrInfoHints(addrinfo& hints) {
     memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
@@ -80,15 +96,46 @@ bool ChatClient::getAuthRespond() {
         fprintf(stderr, "C: Failed to recieve respond information\n");
         return false;
     } else {
-        fprintf(stdout, "C: Received respond from the server: %s", input_buffer_);
+        fprintf(stdout, "C: Received authentification respond from the server: %s", input_buffer_);
         if (!strcmp(input_buffer_, "CODE: OK\n")) {
             return true;
-        } else if (!strcmp(input_buffer_, "CODE: AUTH_ERROR\n")){
-            memset(client_info_.username, 0, sizeof(client_info_.username));
-            return false;
         } else {
             memset(client_info_.username, 0, sizeof(client_info_.username));
             return false;
         }
     }
+}
+
+bool ChatClient::getFindRespond() {
+    if (recv(client_socket_, input_buffer_, sizeof(input_buffer_), 0) < 0) {
+        fprintf(stderr, "C: Failed to recieve respond information\n");
+        return false;
+    } else {
+        fprintf(stdout, "C: Received find respond from the server:\n%s", input_buffer_);
+        if (strstr(input_buffer_, "CODE: OK\n")) {
+            parseFindRespond();
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+void ChatClient::parseFindRespond() {
+    char *p = NULL;
+    size_t offset = 0;
+
+    p = strstr(input_buffer_, "id: ") + sizeof("id: ")-1;
+    offset += strstr(p, "\n") - p;
+    memcpy(find_user_info_.id, p, offset);
+    find_user_info_.id[offset] = '\0';
+    //fprintf(stderr, "%s", find_user_info_.id);
+
+    p = strstr(input_buffer_, "Username: ") + sizeof("Username: ")-1;
+    offset += strstr(p, "\n") - p;
+    memcpy(find_user_info_.username, p, offset);
+    find_user_info_.username[offset] = '\0';
+    fprintf(stderr, "%s", find_user_info_.username);
+
+    //fprintf(stderr, "parse find: %s, %s\n", find_user_info_.id, find_user_info_.username);
 }

@@ -2,6 +2,9 @@
 #include "./ui_mainwindow.h"
 
 #include "QMessageBox"
+#include "QListWidgetItem"
+
+#include "messagewidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -26,6 +29,7 @@ void MainWindow::setupDesign() {
 
     main_window_ui_->verticalLayout->addWidget(authent_widget_);
     main_window_ui_->stackedMainWidget->setCurrentIndex(0);
+    main_window_ui_->chatStackedWidget->setCurrentIndex(1);
 
     QPixmap pixmap;
     pixmap.load(":../resources/icon/logo.png");
@@ -36,6 +40,8 @@ void MainWindow::setupDesign() {
 void MainWindow::setupConnection() {
     connect(authent_widget_, &AuthentificationWidget::sgnlSendAuthInfo, this, &MainWindow::sltSendAuthInfo);
     connect(main_window_ui_->continueButton, &QPushButton::clicked,     this, &MainWindow::sltSwitchPage);
+    connect(main_window_ui_->messagesArea, &MessagesArea::sgnlOpenChat, this, &MainWindow::sltOpenChat);
+    connect(main_window_ui_->searchWidget, &SearchForm::sgnlFindUser,   this, &MainWindow::sltFindUser);
 }
 
 void MainWindow::handleSuccessAuthentification(int auth_type) {
@@ -64,4 +70,12 @@ void MainWindow::sltSendAuthInfo(const char* username, const char* password, int
 
 void MainWindow::sltSwitchPage() {
     main_window_ui_->stackedMainWidget->setCurrentIndex(1);
+}
+
+void MainWindow::sltOpenChat() {
+    main_window_ui_->chatStackedWidget->setCurrentIndex(0);
+}
+
+void MainWindow::sltFindUser(const char *username) {
+    client_.findUser(username);
 }

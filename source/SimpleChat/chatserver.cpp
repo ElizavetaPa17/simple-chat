@@ -1,5 +1,6 @@
 #include "chatserver.h"
 #include "constants.h"
+#include <cstring>
 
 ChatServer::ChatServer()
     : server_socket_(-1)
@@ -38,7 +39,7 @@ void ChatServer::setupServer() {
     fprintf(stdout, "S: Creating a server socket...\n");
     server_socket_ = socket(server_address->ai_family, server_address->ai_socktype, server_address->ai_protocol);
     if (!ISVALIDSOCKET(server_socket_)) {
-        fprintf(stderr, "%s%d%c", "S: Failed to create the server socket: ", errno, '\n');
+        fprintf(stderr, "%s%d%c", "S: Failed to create the server socket: .", errno, '\n');
         exit(EXIT_FAILURE);
     }
 
@@ -92,12 +93,13 @@ void ChatServer::handleReadSocket(const socket_t sngle_socket, socket_t& max_soc
         if ((recv(client->first, buffer, sizeof(buffer), 0)) > 0) {
             parseReadData(buffer, client->first, client->second);
         } else {
-            printf("S: Closing connection with the client: %s\n", getClientAddress(client->second));
+            fprintf(stdout, "S: Closing connection with the client: %s\n", getClientAddress(client->second));
             clients_.erase(client->first);
             FD_CLR(client->first, &master);
         }
     }
 }
+
 void ChatServer::handleWriteSocket(const socket_t sngl_socket) {
   
 }
@@ -116,11 +118,12 @@ typename ChatServer::socket_t ChatServer::handleNewConnection() {
 }
 
 void ChatServer::parseReadData(char* data, socket_t sngl_socket, ClientInfo& client) {
-    char* p = data;
-    if ((p = strstr(data, LOGIN_CONNECTION))) {
+    if (strstr(data, LOGIN_CONNECTION)) {
         handleLoginConnection(data, sngl_socket, client);
-    } else if ((p = strstr(data, RGSTR_CONNECTION))) {
+    } else if (strstr(data, RGSTR_CONNECTION)) {
         handleRegistrConnection(data, sngl_socket, client);
+    } else if (strstr(data, FIND_CONNECTION)) {
+        handleFindConnection(data, sngl_socket, client);
     } else {
         fprintf(stdout, "S: Receive unknown type of connection\n");
     }
@@ -137,7 +140,10 @@ void ChatServer::handleLoginConnection(char* data, socket_t sngl_socket, ClientI
             sendRespond(NULL, OK_RSPND, sngl_socket);
         } else {
             fprintf(stdout, "S: Failed to login the client.\n");
-            sendRespond(NULL,  AUTH_ERROR_RSPND, sngl_socket);
+
+            memset(client.username, '\0', sizeof(client.username));
+            memset(client.password, '\0', sizeof(client.password));
+            sendRespond(NULL, AUTH_ERROR_RSPND, sngl_socket);
         }
     }
 }
@@ -148,7 +154,6 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
                          getClientAddress(client));
     } else {
         fprintf(stdout, "S: Trying to register the client...\n");
-        fprintf(stdout, "%ld\n", strlen(client.username));
         if (!database_.addUser(client.username, client.password)) {
             // reset client username and password
             memset(client.username, '\0', sizeof(client.username));
@@ -161,12 +166,56 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
     }
 }
 
+void ChatServer::handleFindConnection(char* data, socket_t sngl_socket, ClientInfo& client) {
+    static char message[150];
+
+    char *p = NULL, *username = NULL;
+    size_t usr_sz = 0;
+
+    if ((p = strstr(data, "Username: "))) {
+        username = p + sizeof("Username: ")-1;
+        p = strstr(p, "\n");
+        *p = '\0';
+        usr_sz = p - username;
+
+        if (usr_sz > sizeof(UserInfo().username)) {
+            fprintf(stderr, "S: Username is too long for searching.\n");
+            sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
+        } else {
+            const UserInfo* user_info = NULL;
+            if ((user_info = database_.getUserInfo(username)) != NULL) {
+                size_t offset = sizeof("DATA: \nid: ")-1;
+                memcpy(message, "DATA: \n"
+                                "id: ", offset);
+                memcpy(message + offset, user_info->id, strlen(user_info->id));
+                offset += strlen(user_info->id);
+                
+                memcpy(message + offset, "\nUsername: ", sizeof("\nUsername: ")-1);
+                offset += sizeof("\nUsername: ")-1;
+
+                memcpy(message + offset, user_info->username, strlen(user_info->username));
+                offset += strlen(user_info->username);
+                message[offset] = '\n';
+                message[++offset] = '\0';
+                
+                sendRespond(message, OK_RSPND, sngl_socket);
+            } else {
+                sendRespond(NULL, NTFD_ERROR_RSPND, sngl_socket);
+            }
+        }
+    } else {
+        fprintf(stderr, "S: Incorrect find request received.\n\n");
+        sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
+    }
+}
+
 bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl_socket) {
     static char buffer[SERVER_RESPOND_BUFFER_SZ];
 
     size_t offset = sizeof("CODE: ")-1;
     memcpy(buffer, "CODE: ", offset);
 
+    // refactoring
     switch (repsond) {
         case OK_RSPND: 
             memcpy(buffer + offset, "OK\n", sizeof("OK\n")-1);
@@ -175,6 +224,18 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
         case AUTH_ERROR_RSPND:
             memcpy(buffer + offset, "AUTH_ERROR\n", sizeof("AUTH_ERROR\n")-1);
             offset += sizeof("AUTH_ERROR\n")-1;
+            break;
+        case RQST_ERROR_RSPND:
+            memcpy(buffer + offset, "RQST_ERROR\n", sizeof("RQST_ERROR\n")-1);
+            offset += sizeof("AUTH_ERROR\n")-1;
+            break;
+        case SRVR_ERROR_RSPND:
+            memcpy(buffer + offset, "SRVR_ERROR\n", sizeof("SRVR_ERROR\n")-1);
+            offset += sizeof("SRVR_ERROR\n")-1;
+            break;
+        case NTFD_ERROR_RSPND:
+            memcpy(buffer + offset, "NTFD_ERROR\n", sizeof("NTFD_ERROR\n")-1);
+            offset += sizeof("NTFD_ERROR\n")-1;
             break;
         default:
             fprintf(stderr, "S: Failed to send respond: unknown respond type.\n");
@@ -187,14 +248,12 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
             fprintf(stderr, "S: Failed to send respond: message is too long.");
             return false;
         }
-        size_t rspnd_sz = SERVER_RESPOND_BUFFER_SZ - offset - msg_sz;
-        memcpy(buffer + offset, msg, rspnd_sz);
-        offset += rspnd_sz+1;
-    }
+        //size_t rspnd_sz = SERVER_RESPOND_BUFFER_SZ - offset - msg_sz;
+        memcpy(buffer + offset, msg, msg_sz);
+        offset += msg_sz+1;
+    } 
 
     buffer[offset] = '\0';
-    printf("buffer: %s", buffer);
-    
     if (send(sngl_socket, buffer, offset+1, 0) < 0) {
         fprintf(stderr, "S: Failed to send success respond: %d\n", errno);
         return false;
@@ -228,6 +287,7 @@ bool ChatServer::getAuthentInfo(char* data, ClientInfo& client) {
         return false;
     }
 
+    // set checking for usr_sz && pswrd_sz <= 21
     memcpy(client.username, usr, usr_sz);
     memcpy(client.password, pswrd, pswrd_sz);
     return true;

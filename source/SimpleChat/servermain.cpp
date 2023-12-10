@@ -7,6 +7,8 @@ void closeServer();
 int main() {
     chat_server.startAcceptConnection();
     atexit(closeServer);
+
+
 }
 
 void closeServer() {

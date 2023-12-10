@@ -18,11 +18,9 @@ extern const char* REMOTE_SERVICE;
 
 extern const char* LOGIN_CONNECTION;
 extern const char* RGSTR_CONNECTION;
+extern const char* FIND_CONNECTION;
 extern const char* GET_CONNECTION;
 extern const char* POST_CONNECTION;
-
-extern const char* KEEP_ALIVE_CONNECTION;
-extern const char* CLOSE_CONNECTION;
 
 enum AuthentificationType {
     LOGIN,
@@ -32,6 +30,14 @@ enum AuthentificationType {
 enum RespondCode {
     OK_RSPND,
     AUTH_ERROR_RSPND,
+    RQST_ERROR_RSPND,
+    NTFD_ERROR_RSPND,
+    SRVR_ERROR_RSPND,
+};
+
+struct UserInfo {
+    char id [9]; // MEDIUM INT has 8 numbers
+    char username[21];
 };
 
 #endif // CONSTANTS_H

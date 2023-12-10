@@ -1,8 +1,8 @@
 #include "dbutility.h"
 
-#include <mysql/mysql.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
 
 const char *DB_PASSWD = "me7RKf13xZQ442";
 
@@ -28,7 +28,7 @@ bool DbUtility::init() {
                 
                 bool is_success = false;
                 if (setupUsersTable()) {
-                    fprintf(stdout, "D: Successful 'users' table creating.\n");
+                    fprintf(stdout, "D: 'users' table is ready to work.\n");
                     is_success = true;
                 } else {
                     closeConnectionWithError("D: Failed to create the 'users' table: ");
@@ -36,7 +36,7 @@ bool DbUtility::init() {
                 }
 
                 if (is_success && setupMsgsTable()) {
-                    fprintf(stdout, "D: Successful 'messages' table creating.\n"
+                    fprintf(stdout, "D: 'messages' table is ready to work.\n"
                                     "D: The database is ready to work.\n");
                 } else {
                     closeConnectionWithError("D: Failed to create the 'messages' table: ");
@@ -144,21 +144,6 @@ bool DbUtility::setupNewDatabase() {
             is_success &= setupMsgsTable();
 
             return is_success;
-                /*
-            fprintf(stderr, "D: Successful using default database.\n"
-                            "D: Creating 'users' table...\n");
-            if (mysql_query(sql_handle_, "CREATE TABLE users "
-                                         "(id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,"
-                                         "username VARCHAR(20) NOT NULL UNIQUE,"
-                                         "password VARCHAR(20) NOT NULL,"
-                                         "PRIMARY KEY (id))")) {
-                closeConnectionWithError("D: Error to create the user table: ");
-                return false;
-            } else {
-                fprintf(stdout, "D: Successful 'users' creating.\n"
-                                "D: The database is ready to work.\n");
-                return true;
-            }*/
         }
     }
 }
@@ -171,7 +156,8 @@ bool DbUtility::addUser(const char *username, const char *password) {
         return false;
     }
 
-    buffer = std::string("INSERT INTO users VALUES ('") + username + "','" + password + "')";
+    buffer = std::string("INSERT INTO users (username, password) VALUES"
+                         "('") + username + "','" + password + "')";
     if (mysql_query(sql_handle_, buffer.c_str())) {
         fprintf(stderr, "D: Failed to add user: %s\n", mysql_error(sql_handle_)); 
         return false;
@@ -229,6 +215,58 @@ bool DbUtility::isUsernameExist(const char *username) {
 
        mysql_free_result(result);
        return is_exist;
+    }
+}
+
+const UserInfo* DbUtility::getUserInfo(const char *username) {
+    static std::string buffer;
+    static struct UserInfo user_info;
+
+    buffer = std::string("SELECT * FROM users WHERE username ='") + username + "'";
+    if (mysql_query(sql_handle_, buffer.c_str())) {
+        fprintf(stderr, "D: Failed to check username existance: %s\n", mysql_error(sql_handle_));
+        return NULL;
+    } else {
+        MYSQL_RES* result;
+        result = mysql_store_result(sql_handle_);
+
+        bool is_success = false;
+        if (result) {
+            MYSQL_ROW row;
+            if ((row = mysql_fetch_row(result))) {
+                size_t length = strlen(row[0]);
+                if (length > sizeof(user_info.id)-1) {
+                    fprintf(stderr, "D: Failed to get user information: the identificator is too long\n");
+                    is_success = false;
+                } else {
+                    memcpy(user_info.id, row[0], length);
+                    user_info.id[length] = '\0';
+                
+                    length = strlen(row[1]);
+                    if (length > sizeof(user_info.username)-1) {
+                        fprintf(stderr, "D: Failed to get user information: the username is too long\n");
+                        is_success = false;
+                    } else {
+                        memcpy(user_info.username, row[1], length);
+                        user_info.username[length] = '\0';
+                        is_success = true;
+                    }
+                }
+
+            } else {
+                is_success = false;
+            }
+        } else if (mysql_field_count(sql_handle_)) {
+            fprintf(stderr, "D: Failed to find the user '%s': %s \n", username, mysql_error(sql_handle_));    
+            is_success = false;    
+        } 
+
+        mysql_free_result(result); 
+        if (is_success) {
+            return &user_info;
+        } else {
+            return NULL;
+        }
     }
 }
 

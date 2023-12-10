@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <string>
 
+#include "constants.h"
+
 class DbUtility final {
 public:
     DbUtility();
@@ -16,6 +18,8 @@ public:
 
     bool isUserExist(const char* username, const char* password);
     bool isUsernameExist(const char* username);
+
+    const UserInfo* getUserInfo(const char* username);
     
     //bool checkUserAuthentification;
     //bool checkUserMessages();

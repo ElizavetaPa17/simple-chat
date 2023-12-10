@@ -15,7 +15,6 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -35,5 +34,7 @@ private:
 private slots:
     void sltSendAuthInfo(const char* username, const char* password, int auth_type);
     void sltSwitchPage();
+    void sltOpenChat();
+    void sltFindUser(const char* username);
 };
 #endif // MAINWINDOW_H

@@ -7,7 +7,7 @@ class ClickableLabel : public QLabel
 {
     Q_OBJECT
 public:
-    explicit ClickableLabel(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit ClickableLabel(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
