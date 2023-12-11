@@ -16,15 +16,6 @@
 #include "constants.h"
 
 class ChatClient final {
-public:
-    ChatClient();
-    ~ChatClient();
-
-    bool authorizeUser(const char* username, const char* password, int auth_type);
-
-    const char* getClientUsername();
-    bool findUser(const char* username);
-
 private:
     using socket_t = int;
 
@@ -32,7 +23,6 @@ private:
         char id[9]{};
         char username[21]{};
     };
-
 
     socket_t client_socket_;
     ClientInfo client_info_;
@@ -44,6 +34,18 @@ private:
 
     void setupAddrInfoHints(addrinfo& hints);
     void parseFindRespond();
+
+public:
+    ChatClient();
+    ~ChatClient();
+
+    bool authorizeUser(const char* username, const char* password, int auth_type);
+
+    const char*       getClientUsername();
+
+    bool              findUser(const char* username);
+    const ClientInfo* getFoundUser();
+
 };
 
 #endif // CHATCLIENT_H

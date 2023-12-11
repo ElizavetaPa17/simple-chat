@@ -77,5 +77,15 @@ void MainWindow::sltOpenChat() {
 }
 
 void MainWindow::sltFindUser(const char *username) {
-    client_.findUser(username);
+    if (username == nullptr) {
+        main_window_ui_->messagesArea->displayMessages();
+        main_window_ui_->chatStackedWidget->setCurrentIndex(1);
+        return;
+    }
+
+    if (client_.findUser(username)) {
+        main_window_ui_->messagesArea->displayFoundUser(client_.getFoundUser()->id, client_.getFoundUser()->username);
+    } else {
+        main_window_ui_->messagesArea->displayNotFoundUser();
+    }
 }

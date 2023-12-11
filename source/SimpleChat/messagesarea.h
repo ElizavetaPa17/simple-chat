@@ -10,10 +10,13 @@ public:
     MessagesArea(QWidget* parent = nullptr);
     ~MessagesArea();
 
-    void addMessage(QString text);
+    //void addMessage(QString text);
+    void displayMessages();
+    void displayFoundUser(const char* id, const char* username);
+    void displayNotFoundUser();
 
 private:
-    QVBoxLayout* vrtclLayout;
+    void clearArea();
 
 private slots:
     void sltOpenChat();

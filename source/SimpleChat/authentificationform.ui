@@ -98,6 +98,7 @@ QLineEdit:hover {
          </property>
          <property name="styleSheet">
           <string notr="true">QLineEdit {
+	color: rgb(255, 255, 255);
 	background-color: rgba(0, 0, 0, 0%);
 	qproperty-frame: false;
 	margin-bottom: 5px;
@@ -144,6 +145,7 @@ QLineEdit:hover {
            </property>
            <property name="styleSheet">
             <string notr="true">QLabel#registerLabel {
+    color: rgb(255, 255, 255);
 	text-decoration: underline;
 }</string>
            </property>
@@ -167,6 +169,7 @@ QLineEdit:hover {
          </property>
          <property name="styleSheet">
           <string notr="true">QLineEdit {
+	color: rgb(255, 255, 255);
 	background-color: rgba(0, 0, 0, 0%);
 	qproperty-frame: false;
 	margin-bottom: 5px;

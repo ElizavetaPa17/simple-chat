@@ -6,7 +6,6 @@ SearchForm::SearchForm(QWidget *parent) :
     ui(new Ui::SearchForm)
 {
     ui->setupUi(this);
-
     connect(ui->searchButton, &QPushButton::clicked, this, &SearchForm::sltFindUser);
 }
 
@@ -17,8 +16,8 @@ SearchForm::~SearchForm()
 
 void SearchForm::sltFindUser() {
     if (ui->searchLineEdit->text().isEmpty()) {
-        return;
+        emit sgnlFindUser(nullptr);
+    } else {
+        emit sgnlFindUser(ui->searchLineEdit->text().toUtf8().toStdString().c_str());
     }
-
-    emit sgnlFindUser(ui->searchLineEdit->text().toUtf8().toStdString().c_str());
 }

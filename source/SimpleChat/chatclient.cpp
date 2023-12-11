@@ -71,6 +71,9 @@ const char* ChatClient::getClientUsername() {
 }
 
 bool ChatClient::findUser(const char* username) {
+    memset(client_info_.id, 0, sizeof(client_info_.id));
+    memset(client_info_.username, 0, sizeof(client_info_.username));
+
     QString message;
     message += QString(FIND_CONNECTION) + "\n";
     message += "DATE: " + QDateTime::currentDateTime().toString() + "\n";
@@ -121,6 +124,10 @@ bool ChatClient::getFindRespond() {
     }
 }
 
+const typename ChatClient::ClientInfo* ChatClient::getFoundUser() {
+    return &find_user_info_;
+}
+
 void ChatClient::parseFindRespond() {
     char *p = NULL;
     size_t offset = 0;
@@ -129,13 +136,9 @@ void ChatClient::parseFindRespond() {
     offset += strstr(p, "\n") - p;
     memcpy(find_user_info_.id, p, offset);
     find_user_info_.id[offset] = '\0';
-    //fprintf(stderr, "%s", find_user_info_.id);
 
     p = strstr(input_buffer_, "Username: ") + sizeof("Username: ")-1;
     offset += strstr(p, "\n") - p;
     memcpy(find_user_info_.username, p, offset);
     find_user_info_.username[offset] = '\0';
-    fprintf(stderr, "%s", find_user_info_.username);
-
-    //fprintf(stderr, "parse find: %s, %s\n", find_user_info_.id, find_user_info_.username);
 }

@@ -20,6 +20,7 @@ private:
 
 signals:
     void sgnlFindUser(const char* username);
+    void sgnlDisplMsgs();
 
 private slots:
     void sltFindUser();

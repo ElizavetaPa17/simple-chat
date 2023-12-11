@@ -116,13 +116,16 @@
                 <property name="widgetResizable">
                  <bool>true</bool>
                 </property>
+                <property name="alignment">
+                 <set>Qt::AlignHCenter|Qt::AlignTop</set>
+                </property>
                 <widget class="QWidget" name="scrollAreaWidgetContents">
                  <property name="geometry">
                   <rect>
                    <x>0</x>
                    <y>0</y>
                    <width>332</width>
-                   <height>397</height>
+                   <height>387</height>
                   </rect>
                  </property>
                  <layout class="QGridLayout" name="messagesLayout"/>
@@ -141,8 +144,17 @@
               <layout class="QGridLayout" name="gridLayout_7">
                <item row="0" column="0">
                 <widget class="QScrollArea" name="scrollArea">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>4</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="widgetResizable">
                   <bool>true</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
                  </property>
                  <widget class="QWidget" name="scrollAreaWidgetContents_2">
                   <property name="geometry">
@@ -150,7 +162,7 @@
                     <x>0</x>
                     <y>0</y>
                     <width>448</width>
-                    <height>294</height>
+                    <height>301</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_9">
@@ -193,10 +205,16 @@
                </item>
                <item row="1" column="0">
                 <widget class="QFrame" name="frame">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>1</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>100</height>
+                   <height>16777215</height>
                   </size>
                  </property>
                  <property name="frameShape">
@@ -251,7 +269,7 @@
                     <property name="maximumSize">
                      <size>
                       <width>16777215</width>
-                      <height>100</height>
+                      <height>16777215</height>
                      </size>
                     </property>
                     <property name="font">
@@ -259,6 +277,9 @@
                       <family>Ubuntu</family>
                       <bold>false</bold>
                      </font>
+                    </property>
+                    <property name="cursor" stdset="0">
+                     <cursorShape>ArrowCursor</cursorShape>
                     </property>
                     <property name="styleSheet">
                      <string notr="true"/>

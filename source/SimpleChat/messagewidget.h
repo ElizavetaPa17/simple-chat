@@ -8,6 +8,7 @@ class MessageWidget : public QWidget {
     Q_OBJECT
 public:
     MessageWidget(QWidget* parent = nullptr, const QString& text = QString(""));
+    ~MessageWidget();
 
 protected:
     void enterEvent(QEnterEvent* event) override;
