@@ -19,10 +19,10 @@ private:
     void clearArea();
 
 private slots:
-    void sltOpenChat();
+    void sltOpenChat(const char* username);
 
 signals:
-    void sgnlOpenChat();
+    void sgnlOpenChat(const char* username);
 };
 
 #endif // MESSAGESAREA_H

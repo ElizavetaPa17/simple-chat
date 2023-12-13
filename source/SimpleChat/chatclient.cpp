@@ -70,9 +70,13 @@ const char* ChatClient::getClientUsername() {
     }
 }
 
+void ChatClient::sendMessage(const char* dest_username, const char* text) {
+    fprintf(stderr, "destination: %s\n", dest_username);
+}
+
 bool ChatClient::findUser(const char* username) {
-    memset(client_info_.id, 0, sizeof(client_info_.id));
-    memset(client_info_.username, 0, sizeof(client_info_.username));
+    memset(find_user_info_.id, 0, ID_BUFFER_SIZE);
+    memset(find_user_info_.username, 0, USRNM_BUFFER_SIZE);
 
     QString message;
     message += QString(FIND_CONNECTION) + "\n";
@@ -99,8 +103,12 @@ bool ChatClient::getAuthRespond() {
         fprintf(stderr, "C: Failed to recieve respond information\n");
         return false;
     } else {
-        fprintf(stdout, "C: Received authentification respond from the server: %s", input_buffer_);
-        if (!strcmp(input_buffer_, "CODE: OK\n")) {
+        fprintf(stderr, "C: Received authentification respond from the server: %s", input_buffer_);
+        if (strstr(input_buffer_, "CODE: OK\n")) {
+            char *p_id = strstr(input_buffer_, "id: ") + sizeof("id: ")-1;
+            size_t id_sz = strstr(p_id, "\n") - p_id;
+            memcpy(client_info_.id, p_id, id_sz);
+
             return true;
         } else {
             memset(client_info_.username, 0, sizeof(client_info_.username));

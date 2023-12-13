@@ -137,7 +137,13 @@ void ChatServer::handleLoginConnection(char* data, socket_t sngl_socket, ClientI
         fprintf(stdout, "S: Trying to login the client...\n");
         if (database_.isUserExist(client.username, client.password)) {
             fprintf(stdout, "S: Successfull client login.\n");
-            sendRespond(NULL, OK_RSPND, sngl_socket);
+            const UserInfo* user_info;
+            user_info = database_.getUserInfo(client.username);
+
+            char message[30]{};
+            sprintf(message, "DATA: \nid: %s\n", user_info->id);
+            printf("message: %s\n", message);
+            sendRespond(message, OK_RSPND, sngl_socket);
         } else {
             fprintf(stdout, "S: Failed to login the client.\n");
 
@@ -161,13 +167,18 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
 
             sendRespond(NULL, AUTH_ERROR_RSPND, sngl_socket);
         } else {
-            sendRespond(NULL, OK_RSPND, sngl_socket);
+            const UserInfo* user_info;
+            user_info = database_.getUserInfo(client.username);
+
+            char message[30]{};
+            sprintf(message, "DATA: \nid: %s\n", user_info->id);
+            sendRespond(message, OK_RSPND, sngl_socket);
         }
     }
 }
 
 void ChatServer::handleFindConnection(char* data, socket_t sngl_socket, ClientInfo& client) {
-    static char message[150];
+    static char message[150]{};
 
     char *p = NULL, *username = NULL;
     size_t usr_sz = 0;

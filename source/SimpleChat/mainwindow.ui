@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>881</width>
-    <height>525</height>
+    <width>851</width>
+    <height>523</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
-    <height>300</height>
+    <width>750</width>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -26,6 +26,12 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedMainWidget">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="styleSheet">
        <string notr="true">QWidget#stackedMainWidget {
 	background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(0, 0, 0, 255), stop:0.106383 rgba(14, 8, 73, 255), stop:0.319149 rgba(18, 11, 92, 255), stop:0.497872 rgba(14, 12, 110, 255), stop:0.75 rgba(36, 6, 133, 255), stop:0.79 rgba(35, 3, 138, 255), stop:0.86 rgba(39, 0, 146, 255), stop:0.935 rgba(34, 23, 154, 255));
@@ -125,7 +131,7 @@
                    <x>0</x>
                    <y>0</y>
                    <width>332</width>
-                   <height>387</height>
+                   <height>385</height>
                   </rect>
                  </property>
                  <layout class="QGridLayout" name="messagesLayout"/>
@@ -140,14 +146,42 @@
            </item>
            <item row="0" column="3">
             <widget class="QStackedWidget" name="chatStackedWidget">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
              <widget class="QWidget" name="pageChat">
               <layout class="QGridLayout" name="gridLayout_7">
-               <item row="0" column="0">
+               <item row="2" column="0">
+                <widget class="SendMessageForm" name="sendMessageWidget" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>3</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
                 <widget class="QScrollArea" name="scrollArea">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
-                   <verstretch>4</verstretch>
+                   <verstretch>20</verstretch>
                   </sizepolicy>
                  </property>
                  <property name="widgetResizable">
@@ -161,8 +195,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>448</width>
-                    <height>301</height>
+                    <width>418</width>
+                    <height>291</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_9">
@@ -188,13 +222,6 @@
                        <property name="bottomMargin">
                         <number>10</number>
                        </property>
-                       <item>
-                        <widget class="QLabel" name="label_2">
-                         <property name="text">
-                          <string>Hello, Peter! How are You?</string>
-                         </property>
-                        </widget>
-                       </item>
                       </layout>
                      </item>
                     </layout>
@@ -203,7 +230,7 @@
                  </widget>
                 </widget>
                </item>
-               <item row="1" column="0">
+               <item row="0" column="0">
                 <widget class="QFrame" name="frame">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -214,7 +241,7 @@
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>16777215</height>
+                   <height>50</height>
                   </size>
                  </property>
                  <property name="frameShape">
@@ -224,48 +251,14 @@
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_8">
-                  <property name="leftMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>3</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>3</number>
-                  </property>
-                  <item row="0" column="1">
-                   <widget class="QPushButton" name="sendButton">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>0</height>
-                     </size>
-                    </property>
-                    <property name="font">
-                     <font>
-                      <family>ori1Uni</family>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="cursor">
-                     <cursorShape>PointingHandCursor</cursorShape>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">QPushButton#sendButton {	 
-	color: rgb(0, 22, 150);
-	background-color: rgb(206, 198, 170);
-}</string>
-                    </property>
-                    <property name="text">
-                     <string>Send</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="0" column="0">
-                   <widget class="QTextEdit" name="textEdit">
+                   <widget class="QLabel" name="chatUserUsername">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="maximumSize">
                      <size>
                       <width>16777215</width>
@@ -274,24 +267,13 @@
                     </property>
                     <property name="font">
                      <font>
-                      <family>Ubuntu</family>
-                      <bold>false</bold>
+                      <family>ori1Uni</family>
+                      <pointsize>13</pointsize>
+                      <bold>true</bold>
                      </font>
                     </property>
-                    <property name="cursor" stdset="0">
-                     <cursorShape>ArrowCursor</cursorShape>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true"/>
-                    </property>
-                    <property name="verticalScrollBarPolicy">
-                     <enum>Qt::ScrollBarAlwaysOff</enum>
-                    </property>
-                    <property name="horizontalScrollBarPolicy">
-                     <enum>Qt::ScrollBarAlwaysOff</enum>
-                    </property>
-                    <property name="placeholderText">
-                     <string>Write your message...</string>
+                    <property name="text">
+                     <string>TextLabel</string>
                     </property>
                    </widget>
                   </item>
@@ -526,7 +508,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>881</width>
+     <width>851</width>
      <height>26</height>
     </rect>
    </property>
@@ -543,6 +525,12 @@
    <class>SearchForm</class>
    <extends>QWidget</extends>
    <header location="global">searchform.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SendMessageForm</class>
+   <extends>QWidget</extends>
+   <header location="global">sendmessageform.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -38,5 +38,5 @@ void MessageWidget::leaveEvent(QEvent* event) {
 }
 
 void MessageWidget::mousePressEvent(QMouseEvent* event) {
-    emit clicked();
+    emit clicked(sender_name_.text().toUtf8().toStdString().c_str());
 }

@@ -8,7 +8,10 @@
 const int RECV_SERVER_BUFFER_SIZE = 4096;
 const int SERVER_RESPOND_BUFFER_SZ = 300;
 const int CLIENT_RECEIVE_BUFFER_SZ = 300;
-const int INVALID_SOCKET = -1;
+const int MAX_DATABASE_SMALLINT_V  = 65535;
+const int ID_BUFFER_SIZE    = 9;
+const int USRNM_BUFFER_SIZE = 21;
+const int INVALID_SOCKET    = -1;
 
 extern const char* SERVER_ADDRESS;
 extern const char* SERVER_SERVICE;

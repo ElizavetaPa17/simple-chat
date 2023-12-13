@@ -35,6 +35,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         messagesarea.h messagesarea.cpp
         searchform.h searchform.cpp searchform.ui
         founduserform.h founduserform.cpp founduserform.ui
+        sendmessageform.h sendmessageform.cpp sendmessageform.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SimpleChat APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -20,8 +20,8 @@ private:
     using socket_t = int;
 
     struct ClientInfo {
-        char id[9]{};
-        char username[21]{};
+        char id[ID_BUFFER_SIZE]{};
+        char username[USRNM_BUFFER_SIZE]{};
     };
 
     socket_t client_socket_;
@@ -42,7 +42,7 @@ public:
     bool authorizeUser(const char* username, const char* password, int auth_type);
 
     const char*       getClientUsername();
-
+    void              sendMessage(const char* dest_username, const char* text);
     bool              findUser(const char* username);
     const ClientInfo* getFoundUser();
 

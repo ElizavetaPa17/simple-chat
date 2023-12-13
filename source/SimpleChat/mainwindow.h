@@ -34,7 +34,8 @@ private:
 private slots:
     void sltSendAuthInfo(const char* username, const char* password, int auth_type);
     void sltSwitchPage();
-    void sltOpenChat();
+    void sltOpenChat(const char* username);
     void sltFindUser(const char* username);
+    void sltSendMessage(const char* text);
 };
 #endif // MAINWINDOW_H

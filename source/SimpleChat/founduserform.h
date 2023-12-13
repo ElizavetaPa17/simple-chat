@@ -2,6 +2,7 @@
 #define FOUNDUSERFORM_H
 
 #include <QWidget>
+#include "constants.h"
 
 namespace Ui {
 class FoundUserForm;
@@ -19,6 +20,8 @@ public:
 
 private:
     Ui::FoundUserForm *ui;
+    char username_[USRNM_BUFFER_SIZE]{};
+
     void setupDesign();
 
 protected:
@@ -28,7 +31,7 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
 
 signals:
-    void clicked();
+    void clicked(const char* username);
 };
 
 #endif // FOUNDUSERFORM_H

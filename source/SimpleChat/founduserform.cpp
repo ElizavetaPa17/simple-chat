@@ -27,6 +27,8 @@ void FoundUserForm::setupDesign() {
 }
 
 void FoundUserForm::setUserInfo(const char* id, const char* username) {
+    memcpy(username_, username, USRNM_BUFFER_SIZE);
+
     ui->userInfo->setText(QString("ID: ") + id + "\n"
                         "Username: " + username);
 }
@@ -40,5 +42,5 @@ void FoundUserForm::leaveEvent(QEvent* event) {
 }
 
 void FoundUserForm::mousePressEvent(QMouseEvent* event) {
-    emit clicked();
+    emit clicked(username_);
 }

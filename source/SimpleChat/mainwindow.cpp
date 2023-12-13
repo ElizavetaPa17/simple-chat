@@ -38,10 +38,11 @@ void MainWindow::setupDesign() {
 }
 
 void MainWindow::setupConnection() {
-    connect(authent_widget_, &AuthentificationWidget::sgnlSendAuthInfo, this, &MainWindow::sltSendAuthInfo);
-    connect(main_window_ui_->continueButton, &QPushButton::clicked,     this, &MainWindow::sltSwitchPage);
-    connect(main_window_ui_->messagesArea, &MessagesArea::sgnlOpenChat, this, &MainWindow::sltOpenChat);
-    connect(main_window_ui_->searchWidget, &SearchForm::sgnlFindUser,   this, &MainWindow::sltFindUser);
+    connect(authent_widget_, &AuthentificationWidget::sgnlSendAuthInfo,            this, &MainWindow::sltSendAuthInfo);
+    connect(main_window_ui_->continueButton,    &QPushButton::clicked,             this, &MainWindow::sltSwitchPage);
+    connect(main_window_ui_->messagesArea,      &MessagesArea::sgnlOpenChat,       this, &MainWindow::sltOpenChat);
+    connect(main_window_ui_->searchWidget,      &SearchForm::sgnlFindUser,         this, &MainWindow::sltFindUser);
+    connect(main_window_ui_->sendMessageWidget, &SendMessageForm::sgnlSendMessage, this, &MainWindow::sltSendMessage);
 }
 
 void MainWindow::handleSuccessAuthentification(int auth_type) {
@@ -72,12 +73,13 @@ void MainWindow::sltSwitchPage() {
     main_window_ui_->stackedMainWidget->setCurrentIndex(1);
 }
 
-void MainWindow::sltOpenChat() {
+void MainWindow::sltOpenChat(const char* username) {
     main_window_ui_->chatStackedWidget->setCurrentIndex(0);
+    main_window_ui_->chatUserUsername->setText("Chat with " + QString(username));
 }
 
 void MainWindow::sltFindUser(const char *username) {
-    if (username == nullptr) {
+    if (username == nullptr || !strcmp(username, client_.getClientUsername())) {
         main_window_ui_->messagesArea->displayMessages();
         main_window_ui_->chatStackedWidget->setCurrentIndex(1);
         return;
@@ -88,4 +90,9 @@ void MainWindow::sltFindUser(const char *username) {
     } else {
         main_window_ui_->messagesArea->displayNotFoundUser();
     }
+}
+
+void MainWindow::sltSendMessage(const char* text) {
+    client_.sendMessage(main_window_ui_->chatUserUsername->text().toUtf8().toStdString().c_str() + sizeof("Chat with ")-1,
+                        text);
 }
