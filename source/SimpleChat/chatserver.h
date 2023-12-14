@@ -49,7 +49,9 @@ private:
     void     parseReadData(char* data, socket_t sngle_socket, ClientInfo& client);
     void     handleLoginConnection(char* data, socket_t sngle_socket, ClientInfo& client);
     void     handleRegistrConnection(char* data, socket_t sngle_socket, ClientInfo& client);
-    void     handleFindConnection(char* data, socket_t sngle_socket, ClientInfo& client);
+    void     handleFindConnection(char* data, socket_t sngle_socket);
+    void     handleSendConnection(char* data, socket_t sngle_socket);
+    void     handleGetNewMessagesConnection(char* data, socket_t sngle_socket);
 
     bool sendRespond(const char* respond, RespondCode res, socket_t sngle_socket);
 

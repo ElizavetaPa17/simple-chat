@@ -20,15 +20,8 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0" rowspan="2">
-    <widget class="QLabel" name="userPhoto">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1" rowspan="2">
-    <widget class="QLabel" name="userInfo">
+    <widget class="QLabel" name="userIDLabel">
      <property name="font">
       <font>
        <family>ori1Uni</family>
@@ -49,6 +42,32 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLabel" name="usernameLabel">
+     <property name="font">
+      <font>
+       <family>ori1Uni</family>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+	color: rgb(255, 255, 255);
+	text-align: center;
+}</string>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" rowspan="3">
+    <widget class="QLabel" name="userPhotoLabel">
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>

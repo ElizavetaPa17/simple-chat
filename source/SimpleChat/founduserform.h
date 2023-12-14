@@ -20,7 +20,8 @@ public:
 
 private:
     Ui::FoundUserForm *ui;
-    char username_[USRNM_BUFFER_SIZE]{};
+    char dest_id_[ID_BUFFER_SIZE]{};
+    char dest_username_[USRNM_BUFFER_SIZE]{};
 
     void setupDesign();
 
@@ -31,7 +32,7 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
 
 signals:
-    void clicked(const char* username);
+    void clicked(const char* id, const char* username);
 };
 
 #endif // FOUNDUSERFORM_H

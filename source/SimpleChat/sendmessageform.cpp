@@ -17,7 +17,7 @@ SendMessageForm::~SendMessageForm() {
 }
 
 void SendMessageForm::sltSendMessage() {
-    if (ui->messageText->toPlainText().size() > MAX_DATABASE_SMALLINT_V / 10) {
+    if (ui->messageText->toPlainText().size() > MAX_MSG_SIZE) {
         QMessageBox::warning(nullptr, "Max message length", "You've recieved max message length.",
                              QMessageBox::Ok);
         return;

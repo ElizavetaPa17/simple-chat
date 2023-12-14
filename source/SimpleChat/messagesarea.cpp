@@ -66,6 +66,6 @@ void MessagesArea::displayNotFoundUser() {
     widget()->layout()->addWidget(label_not_found);
 }
 
-void MessagesArea::sltOpenChat(const char* username) {
-    emit sgnlOpenChat(username);
+void MessagesArea::sltOpenChat(const char* dest_id, const char* dest_username) {
+    emit sgnlOpenChat(dest_id, dest_username);
 }

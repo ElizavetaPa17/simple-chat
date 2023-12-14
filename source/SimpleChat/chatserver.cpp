@@ -1,6 +1,9 @@
 #include "chatserver.h"
-#include "constants.h"
 #include <cstring>
+
+#include <vector>
+
+#include "constants.h"
 
 ChatServer::ChatServer()
     : server_socket_(-1)
@@ -123,7 +126,11 @@ void ChatServer::parseReadData(char* data, socket_t sngl_socket, ClientInfo& cli
     } else if (strstr(data, RGSTR_CONNECTION)) {
         handleRegistrConnection(data, sngl_socket, client);
     } else if (strstr(data, FIND_CONNECTION)) {
-        handleFindConnection(data, sngl_socket, client);
+        handleFindConnection(data, sngl_socket);
+    } else if (strstr(data, SEND_CONNECTION)) {
+        handleSendConnection(data, sngl_socket);
+    } else if (strstr (data, GTNMS_CONNECTION)) {
+        handleGetNewMessagesConnection(data, sngl_socket);
     } else {
         fprintf(stdout, "S: Receive unknown type of connection\n");
     }
@@ -142,7 +149,6 @@ void ChatServer::handleLoginConnection(char* data, socket_t sngl_socket, ClientI
 
             char message[30]{};
             sprintf(message, "DATA: \nid: %s\n", user_info->id);
-            printf("message: %s\n", message);
             sendRespond(message, OK_RSPND, sngl_socket);
         } else {
             fprintf(stdout, "S: Failed to login the client.\n");
@@ -177,7 +183,7 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
     }
 }
 
-void ChatServer::handleFindConnection(char* data, socket_t sngl_socket, ClientInfo& client) {
+void ChatServer::handleFindConnection(char* data, socket_t sngl_socket) {
     static char message[150]{};
 
     char *p = NULL, *username = NULL;
@@ -218,6 +224,38 @@ void ChatServer::handleFindConnection(char* data, socket_t sngl_socket, ClientIn
         fprintf(stderr, "S: Incorrect find request received.\n\n");
         sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
     }
+}
+
+// TODO ADD HANDLE WRONG REQUEST FORMAT
+void ChatServer::handleSendConnection(char* data, socket_t sngl_socket) {
+    static char buffer[SERVER_RESPOND_BUFFER_SZ];
+
+    char *from_id = nullptr;
+    char *to_id   = nullptr;
+    char *date    = nullptr;
+    char *text    = nullptr;
+
+    text = strstr(data, "Text: ") + sizeof("Text: ")-1;
+
+    to_id = strstr(data, "RECEIVER_ID: ") + sizeof("RECEIVER_ID: ")-1;
+    to_id[strstr(to_id, "\n")-to_id] = '\0';
+
+    from_id = strstr(data, "SENDER_ID: ") + sizeof("SENDER_ID: ")-1;
+    from_id[strstr(from_id, "\n")-from_id] = '\0';
+
+    date = strstr(data, "DATE: ") + sizeof("DATE: ")-1;
+    date[strstr(date, "\n")-date] = '\0';
+    
+    database_.addMessage(from_id, to_id, date, text);
+}
+
+void ChatServer::handleGetNewMessagesConnection(char *data, socket_t sngl_socket) {
+    char* p_id = data;
+    p_id = strstr(p_id, "id: ") + sizeof("id: ")-1;
+    p_id[strstr(p_id, "\n")-p_id] = '\0';
+
+    std::vector<FetchedMessage> messages = database_.getAllNewMessages(p_id);
+    fprintf(stdout, "C: receive messages");
 }
 
 bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl_socket) {

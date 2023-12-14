@@ -29,6 +29,9 @@ void MessageWidget::setupDesign(const QString& text) {
     setFixedHeight(100);
 }
 
+void MessageWidget::fetchID(const QString &text) {
+
+}
 void MessageWidget::enterEvent(QEnterEvent* event) {
     setCursor(Qt::PointingHandCursor);
 }
@@ -38,5 +41,5 @@ void MessageWidget::leaveEvent(QEvent* event) {
 }
 
 void MessageWidget::mousePressEvent(QMouseEvent* event) {
-    emit clicked(sender_name_.text().toUtf8().toStdString().c_str());
+    emit clicked("test id", "test name");
 }

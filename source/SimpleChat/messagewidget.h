@@ -17,14 +17,15 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
 
 private:
-    const char* username_;
+    const char* sender_id_;
     QLabel  profile_photo_;
     QLabel  sender_name_;
 
     void setupDesign(const QString& text);
+    void fetchID(const QString& text);
 
 signals:
-    void clicked(const char* username);
+    void clicked(const char* id, const char* username);
 };
 
 #endif // MESSAGEWIDGET_H

@@ -73,15 +73,16 @@ void MainWindow::sltSwitchPage() {
     main_window_ui_->stackedMainWidget->setCurrentIndex(1);
 }
 
-void MainWindow::sltOpenChat(const char* username) {
+void MainWindow::sltOpenChat(const char* id, const char* username) {
+    client_.prepareReceiverID(id);
+
     main_window_ui_->chatStackedWidget->setCurrentIndex(0);
     main_window_ui_->chatUserUsername->setText("Chat with " + QString(username));
 }
 
 void MainWindow::sltFindUser(const char *username) {
     if (username == nullptr || !strcmp(username, client_.getClientUsername())) {
-        main_window_ui_->messagesArea->displayMessages();
-        main_window_ui_->chatStackedWidget->setCurrentIndex(1);
+        main_window_ui_->messagesArea->displayNotFoundUser();
         return;
     }
 
@@ -93,6 +94,5 @@ void MainWindow::sltFindUser(const char *username) {
 }
 
 void MainWindow::sltSendMessage(const char* text) {
-    client_.sendMessage(main_window_ui_->chatUserUsername->text().toUtf8().toStdString().c_str() + sizeof("Chat with ")-1,
-                        text);
+    client_.sendMessage(text);
 }

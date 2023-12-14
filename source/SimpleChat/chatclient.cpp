@@ -41,18 +41,19 @@ bool ChatClient::authorizeUser(const char* username, const char* password, int a
     QString message;
     if (auth_type == LOGIN) {
         message += QString(LOGIN_CONNECTION) + "\n";
+        fprintf(stdout, "C: Sending LOGIN request...\n");
     } else if (auth_type == RGSTR) {
         message += QString(RGSTR_CONNECTION) + "\n";
     } else {
         fprintf(stderr, "C: Failed to send authentification information: unknown type\n");
+        fprintf(stdout, "C: Sending RGSTR request...\n");
     }
 
-    message += "DATE: "       + QDateTime::currentDateTime().toString() + "\n";
+    message += "DATE: "       + QDateTime::currentDateTime().toString(DATABASE_DATE_FORMAT) + "\n";
     message += "DATA: \n";
     message += "Username: "   + QString(username)                       + "\n";
     message += "Password: "   + QString(password) + "\n";
 
-    fprintf(stdout, "C: Sending login request...\n");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
         fprintf(stderr, "%s%d\n", "C: Sending login information failed: ", errno);
         return false;
@@ -70,8 +71,28 @@ const char* ChatClient::getClientUsername() {
     }
 }
 
-void ChatClient::sendMessage(const char* dest_username, const char* text) {
-    fprintf(stderr, "destination: %s\n", dest_username);
+void ChatClient::prepareReceiverID(const char* id) {
+    memcpy(receiver_id_, id, ID_BUFFER_SIZE);
+}
+
+void ChatClient::sendMessage(const char* text) {
+    QString message;
+    message += QString(SEND_CONNECTION) + "\n";
+    message += "DATE: " + QDateTime::currentDateTime().toString(DATABASE_DATE_FORMAT) + "\n";
+    message += "SENDER_ID: " + QString(client_info_.id) + "\n";
+    message += "RECEIVER_ID: " + QString(receiver_id_) + "\n";
+    message += "DATA: \n";
+    message += "Text: " + QString(text);
+
+    fprintf(stderr, "message %s\n", message.toStdString().c_str());
+
+    fprintf(stdout, "C: Sending SEND request...");
+    if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
+        fprintf(stderr, "%s%s\n", "C: Sending SEND request failed: ", errno);
+        return; //false;
+    } else {
+        return; //true
+    }
 }
 
 bool ChatClient::findUser(const char* username) {
@@ -80,13 +101,13 @@ bool ChatClient::findUser(const char* username) {
 
     QString message;
     message += QString(FIND_CONNECTION) + "\n";
-    message += "DATE: " + QDateTime::currentDateTime().toString() + "\n";
+    message += "DATE: " + QDateTime::currentDateTime().toString(DATABASE_DATE_FORMAT) + "\n";
     message += "DATA: \n";
     message += "Username: " + QString(username)                   + "\n";
 
-    fprintf(stdout, "C: Sending find request...\n");
+    fprintf(stdout, "C: Sending FIND request...\n");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
-        fprintf(stderr, "%s%d\n", "C: Sending find request failed: ", errno);
+        fprintf(stderr, "%s%d\n", "C: Sending FIND request failed: ", errno);
         return false;
     } else {
         return getFindRespond();
@@ -103,14 +124,16 @@ bool ChatClient::getAuthRespond() {
         fprintf(stderr, "C: Failed to recieve respond information\n");
         return false;
     } else {
-        fprintf(stderr, "C: Received authentification respond from the server: %s", input_buffer_);
+        fprintf(stdout, "C: Received authentification respond from the server: ");
         if (strstr(input_buffer_, "CODE: OK\n")) {
+            fprintf(stdout, "OK.\n");
             char *p_id = strstr(input_buffer_, "id: ") + sizeof("id: ")-1;
             size_t id_sz = strstr(p_id, "\n") - p_id;
             memcpy(client_info_.id, p_id, id_sz);
 
             return true;
         } else {
+            fprintf(stdout, "FAILED.\n");
             memset(client_info_.username, 0, sizeof(client_info_.username));
             return false;
         }
@@ -122,11 +145,13 @@ bool ChatClient::getFindRespond() {
         fprintf(stderr, "C: Failed to recieve respond information\n");
         return false;
     } else {
-        fprintf(stdout, "C: Received find respond from the server:\n%s", input_buffer_);
+        fprintf(stdout, "C: Received find respond from the server: ");
         if (strstr(input_buffer_, "CODE: OK\n")) {
+            fprintf(stdout, "OK.\n");
             parseFindRespond();
             return true;
         } else {
+            fprintf(stdout, "NOT FOUND.\n");
             return false;
         }
     }

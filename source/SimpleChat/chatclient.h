@@ -27,6 +27,7 @@ private:
     socket_t client_socket_;
     ClientInfo client_info_;
     ClientInfo find_user_info_;
+    char receiver_id_[ID_BUFFER_SIZE]{};
     char input_buffer_[CLIENT_RECEIVE_BUFFER_SZ];
 
     bool getAuthRespond();
@@ -42,7 +43,8 @@ public:
     bool authorizeUser(const char* username, const char* password, int auth_type);
 
     const char*       getClientUsername();
-    void              sendMessage(const char* dest_username, const char* text);
+    void              prepareReceiverID(const char* id);
+    void              sendMessage(const char* text);
     bool              findUser(const char* username);
     const ClientInfo* getFoundUser();
 

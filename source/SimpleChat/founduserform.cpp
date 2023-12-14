@@ -20,17 +20,19 @@ void FoundUserForm::setupDesign() {
     pixmap.load(":../resources/icon/profile_icon.png");
     pixmap = pixmap.scaled(70, 70);
 
-    ui->userPhoto->setFixedSize(100, 75);
-    ui->userPhoto->setPixmap(pixmap);
+    ui->userPhotoLabel->setFixedSize(100, 75);
+    ui->userPhotoLabel->setPixmap(pixmap);
 
     setFixedHeight(100);
 }
 
 void FoundUserForm::setUserInfo(const char* id, const char* username) {
-    memcpy(username_, username, USRNM_BUFFER_SIZE);
+    memcpy(dest_id_, id, ID_BUFFER_SIZE);
+    memcpy(dest_username_, username, USRNM_BUFFER_SIZE);
 
-    ui->userInfo->setText(QString("ID: ") + id + "\n"
-                        "Username: " + username);
+    qDebug() << "ID: " << dest_id_;
+    ui->userIDLabel->setText(QString("ID: ") + id);
+    ui->usernameLabel->setText(QString("Username: ") + username);
 }
 
 void FoundUserForm::enterEvent(QEnterEvent* event) {
@@ -42,5 +44,6 @@ void FoundUserForm::leaveEvent(QEvent* event) {
 }
 
 void FoundUserForm::mousePressEvent(QMouseEvent* event) {
-    emit clicked(username_);
+    qDebug() << "foundform:" << dest_id_;
+    emit clicked(dest_id_, dest_username_);
 }

@@ -106,8 +106,9 @@ bool DbUtility::setupMsgsTable() {
             if (mysql_query(sql_handle_, "CREATE TABLE messages "
                                          "(from_id SMALLINT UNSIGNED NOT NULL,"
                                          "to_id SMALLINT UNSIGNED NOT NULL,"
-                                         "sendDate DATE NOT NULL,"
-                                         "msgText TEXT NOT NULL,"
+                                         "send_date DATETIME NOT NULL,"
+                                         "is_new BOOL NOT NULL DEFAULT 1,"
+                                         "msg_text TEXT NOT NULL,"
                                          "FOREIGN KEY (from_id) REFERENCES users (id) ON DELETE CASCADE,"
                                          "FOREIGN KEY (to_id) REFERENCES users (id) ON DELETE CASCADE)")) {
                 closeConnectionWithError("D: Failed to create the 'users' table: ");
@@ -164,6 +165,25 @@ bool DbUtility::addUser(const char *username, const char *password) {
     } 
 
     fprintf(stdout, "D: The user '%s' was added successfully.\n", username);
+    return true;
+}
+
+bool DbUtility::addMessage(const char *from_id, const char *to_id, const char *date, const char *text) {
+    fprintf(stderr, "D: data: %s|\n\n", text);
+
+    static std::string buffer;
+    buffer = std::string("INSERT INTO messages (from_id, to_id, send_date, msg_text) VALUES"
+                         "('") + from_id + "','" + to_id + "','" + date + "','" + text + "')";
+
+    if (mysql_query(sql_handle_, buffer.c_str())) {
+        fprintf(stderr, "D: Failed to add the message: %s\n", mysql_error(sql_handle_));
+        return false;
+    }
+
+    fprintf(stderr, "D: success");
+    return true;
+
+    fprintf(stderr, "from: %s\n, to: %s\n, date: %s, text: %s\n", from_id, to_id, date, text);
     return true;
 }
 
@@ -267,6 +287,30 @@ const UserInfo* DbUtility::getUserInfo(const char *username) {
         } else {
             return NULL;
         }
+    }
+}
+
+std::vector<FetchedMessage> DbUtility::getAllNewMessages(const char *id) {
+    static std::string buffer;
+    buffer = std::string("SELECT * FROM messages WHERE to_id=\"") + id + "\" AND is_new=\"1\"";
+
+    if (mysql_query(sql_handle_, buffer.c_str())) {
+        fprintf(stderr, "D: Failed to get new messages: %s\n", mysql_error(sql_handle_));
+        return std::vector<FetchedMessage>(0);
+    } else {
+        MYSQL_RES* result = mysql_store_result(sql_handle_);
+        std::vector<FetchedMessage> messages;
+
+        if (result) {
+            MYSQL_ROW row;      
+            while ((row = mysql_fetch_row(result))) {
+                fprintf(stderr, "send_date: %s, message_text: %s\n", row[2], row[4]);
+                messages.push_back(FetchedMessage{row[1], row[2], row[4]});
+            }
+        }
+
+        mysql_free_result(result);
+        return messages;
     }
 }
 
