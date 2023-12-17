@@ -1,5 +1,7 @@
 #include "constants.h"
 
+const char* TEXT_END_IDENTIF = "\f";
+
 const char* SERVER_ADDRESS = NULL;
 const char* SERVER_SERVICE = "8080";
 
@@ -12,4 +14,5 @@ const char* LOGIN_CONNECTION = "TYPE: LOGIN";
 const char* RGSTR_CONNECTION = "TYPE: RGSTR";
 const char* FIND_CONNECTION  = "TYPE: FIND";
 const char* SEND_CONNECTION  = "TYPE: SEND";
-const char* GTNMS_CONNECTION  = "TYPE: GTNMS";
+const char* GTNMS_CONNECTION = "TYPE: GTNMS";
+const char* GTAMS_CONNECTION = "TYPE: GTAMS";

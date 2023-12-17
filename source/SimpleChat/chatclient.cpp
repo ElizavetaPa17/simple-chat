@@ -13,20 +13,20 @@ ChatClient::ChatClient()
     addrinfo* remote_address;
     if (getaddrinfo(REMOTE_ADDRESS, REMOTE_SERVICE, &hints, &remote_address)) {
         fprintf(stderr, "%s%d%c", "C: Failed to get the remote address: ", errno, '\n');
-        // return error;
+        exit(EXIT_FAILURE);
     }
 
     fprintf(stdout, "C: Creating the client socket...\n");
     client_socket_ = socket(remote_address->ai_family, remote_address->ai_socktype, remote_address->ai_protocol);
     if (!ISVALIDSOCKET(client_socket_)) {
         fprintf(stderr, "%s%d%c", "C: Failed to create the client socket: ", errno, '\n');
-        // return error;
+        exit(EXIT_FAILURE);
     }
 
     fprintf(stdout, "C: Connecting to the remote address...\n");
     if (connect(client_socket_, remote_address->ai_addr, remote_address->ai_addrlen)) {
         fprintf(stderr, "%s%d%c", "C: Failed to connect to the remote address: ", errno, '\n');
-        // return error;
+        exit(EXIT_FAILURE);
     }
 
     freeaddrinfo(remote_address);
@@ -49,7 +49,6 @@ bool ChatClient::authorizeUser(const char* username, const char* password, int a
         fprintf(stdout, "C: Sending RGSTR request...\n");
     }
 
-    message += "DATE: "       + QDateTime::currentDateTime().toString(DATABASE_DATE_FORMAT) + "\n";
     message += "DATA: \n";
     message += "Username: "   + QString(username)                       + "\n";
     message += "Password: "   + QString(password) + "\n";
@@ -59,7 +58,14 @@ bool ChatClient::authorizeUser(const char* username, const char* password, int a
         return false;
     } else {
         memcpy(client_info_.username, username, sizeof(client_info_.username));
-        return getAuthRespond();
+        bool is_success = getAuthRespond();
+
+        if (is_success) {
+            getNewMessages();
+            // start accepting new messages;
+        }
+
+        return is_success;
     }
 }
 
@@ -84,11 +90,9 @@ void ChatClient::sendMessage(const char* text) {
     message += "DATA: \n";
     message += "Text: " + QString(text);
 
-    fprintf(stderr, "message %s\n", message.toStdString().c_str());
-
     fprintf(stdout, "C: Sending SEND request...");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
-        fprintf(stderr, "%s%s\n", "C: Sending SEND request failed: ", errno);
+        fprintf(stderr, "C: Sending SEND request failed: %d\n", errno);
         return; //false;
     } else {
         return; //true
@@ -101,9 +105,8 @@ bool ChatClient::findUser(const char* username) {
 
     QString message;
     message += QString(FIND_CONNECTION) + "\n";
-    message += "DATE: " + QDateTime::currentDateTime().toString(DATABASE_DATE_FORMAT) + "\n";
     message += "DATA: \n";
-    message += "Username: " + QString(username)                   + "\n";
+    message += "Username: " + QString(username) + "\n";
 
     fprintf(stdout, "C: Sending FIND request...\n");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
@@ -174,4 +177,69 @@ void ChatClient::parseFindRespond() {
     offset += strstr(p, "\n") - p;
     memcpy(find_user_info_.username, p, offset);
     find_user_info_.username[offset] = '\0';
+}
+
+bool ChatClient::getAllMsgRespond() {
+    while (recv(client_socket_, input_buffer_, sizeof(input_buffer_), 0) > 0) {
+            char *p = input_buffer_;
+            char sender_id[ID_BUFFER_SIZE];
+            char date[DATE_BUFFER_SIZE];
+            char text[MAX_MSG_SIZE]{};
+            size_t sz = 0;
+
+            while ((p = strstr(p, "Sender_id:"))) {
+                p += sizeof("Sender_id:");
+                sz = strstr(p, "\n")-p;
+                memcpy(sender_id, p, sz);
+                sender_id[sz] = 0;
+
+                p = strstr(p, "Date:");
+                p += sizeof("Date:");
+                sz = strstr(p, "\n")-p;
+                memcpy(date, p, sz);
+                date[sz] = 0;
+
+                p = strstr(p, "Text:");
+                p += sizeof("Text:");
+                sz = strstr(p, TEXT_END_IDENTIF)-p;
+                memcpy(text, p, sz);
+                text[sz] = 0;
+            }
+
+        if (strstr(input_buffer_, "CODE: ENDSND")) {
+            break;
+        }
+    }
+
+    return true;
+}
+
+void ChatClient::getNewMessages() {
+    QString message;
+    message += QString(GTNMS_CONNECTION) + "\n";
+    message += "DATA: \n";
+    message += QString("id: ") + client_info_.id + '\n';
+
+    if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
+        fprintf(stderr, "C: Failed to send GTNMS request: %d\n", errno);
+        return;
+    } else {
+        getAllMsgRespond();
+        return;
+    }
+}
+
+void ChatClient::getAllMessages() {
+    QString message;
+    message += QString(GTAMS_CONNECTION) + "\n";
+    message += "DATA: \n";
+    message += QString("id: ") + client_info_.id + '\n';
+
+    if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
+        fprintf(stderr, "C: Failed to send GTNMS request: %d\n", errno);
+        return;
+    } else {
+        getAllMsgRespond();
+        return;
+    }
 }

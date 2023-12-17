@@ -2,6 +2,7 @@
 #include <cstring>
 
 #include <vector>
+#include <sstream>
 
 #include "constants.h"
 
@@ -255,7 +256,23 @@ void ChatServer::handleGetNewMessagesConnection(char *data, socket_t sngl_socket
     p_id[strstr(p_id, "\n")-p_id] = '\0';
 
     std::vector<FetchedMessage> messages = database_.getAllNewMessages(p_id);
-    fprintf(stdout, "C: receive messages");
+    std::stringstream ss;
+    for (int i = 0; i < messages.size(); ++i) {
+        ss << "DATA: \nSender_id: " << messages[i].from_id;
+        ss << "\nDate: " << messages[i].date;
+        ss << "\nText: " << messages[i].text << TEXT_END_IDENTIF;
+        
+        if (ss.str().size() > SERVER_RESPOND_BUFFER_SZ-50) {
+            sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
+            ss = std::stringstream();
+        }
+    }
+    
+    if (ss.str().size() != 0) {
+        sendRespond(ss.str().c_str(), ENDSND_RSPND, sngl_socket);
+    } else {
+        sendRespond(NULL, ENDSND_RSPND, sngl_socket);
+    }
 }
 
 bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl_socket) {
@@ -264,11 +281,15 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
     size_t offset = sizeof("CODE: ")-1;
     memcpy(buffer, "CODE: ", offset);
 
-    // refactoring
     switch (repsond) {
         case OK_RSPND: 
             memcpy(buffer + offset, "OK\n", sizeof("OK\n")-1);
             offset += sizeof("OK\n")-1;
+            break;
+        case ENDSND_RSPND:
+            memcpy(buffer + offset, "ENDSND\n", sizeof("ENDSND\n")-1);
+            offset += sizeof("ENDSND\n")-1;
+            fprintf(stderr, "S: ENDSND\n");
             break;
         case AUTH_ERROR_RSPND:
             memcpy(buffer + offset, "AUTH_ERROR\n", sizeof("AUTH_ERROR\n")-1);
@@ -297,7 +318,7 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
             fprintf(stderr, "S: Failed to send respond: message is too long.");
             return false;
         }
-        //size_t rspnd_sz = SERVER_RESPOND_BUFFER_SZ - offset - msg_sz;
+
         memcpy(buffer + offset, msg, msg_sz);
         offset += msg_sz+1;
     } 

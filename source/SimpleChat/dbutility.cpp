@@ -169,8 +169,6 @@ bool DbUtility::addUser(const char *username, const char *password) {
 }
 
 bool DbUtility::addMessage(const char *from_id, const char *to_id, const char *date, const char *text) {
-    fprintf(stderr, "D: data: %s|\n\n", text);
-
     static std::string buffer;
     buffer = std::string("INSERT INTO messages (from_id, to_id, send_date, msg_text) VALUES"
                          "('") + from_id + "','" + to_id + "','" + date + "','" + text + "')";
@@ -304,7 +302,6 @@ std::vector<FetchedMessage> DbUtility::getAllNewMessages(const char *id) {
         if (result) {
             MYSQL_ROW row;      
             while ((row = mysql_fetch_row(result))) {
-                fprintf(stderr, "send_date: %s, message_text: %s\n", row[2], row[4]);
                 messages.push_back(FetchedMessage{row[1], row[2], row[4]});
             }
         }

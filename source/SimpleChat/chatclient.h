@@ -32,9 +32,12 @@ private:
 
     bool getAuthRespond();
     bool getFindRespond();
+    bool getAllMsgRespond();
 
     void setupAddrInfoHints(addrinfo& hints);
     void parseFindRespond();
+
+    void getNewMessages();
 
 public:
     ChatClient();
