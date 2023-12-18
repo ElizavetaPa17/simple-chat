@@ -236,11 +236,24 @@ bool DbUtility::isUsernameExist(const char *username) {
     }
 }
 
-const UserInfo* DbUtility::getUserInfo(const char *username) {
+const UserInfo* DbUtility::getUserInfoByUsername(const char *username) {
+    return getUserInfo(username, true);
+}
+
+const UserInfo* DbUtility::getUserInfoById(const char *id) {
+    return getUserInfo(id, false);
+}
+
+const UserInfo* DbUtility::getUserInfo(const char* info, bool is_username) {
     static std::string buffer;
     static struct UserInfo user_info;
 
-    buffer = std::string("SELECT * FROM users WHERE username ='") + username + "'";
+    if (is_username) {
+        buffer = std::string("SELECT * FROM users WHERE username='") + info + "'";
+    } else {
+        buffer = std::string("SELECT * FROM users WHERE id='") + info + "'";
+    }
+
     if (mysql_query(sql_handle_, buffer.c_str())) {
         fprintf(stderr, "D: Failed to check username existance: %s\n", mysql_error(sql_handle_));
         return NULL;
@@ -253,7 +266,7 @@ const UserInfo* DbUtility::getUserInfo(const char *username) {
             MYSQL_ROW row;
             if ((row = mysql_fetch_row(result))) {
                 size_t length = strlen(row[0]);
-                if (length > sizeof(user_info.id)-1) {
+                if (length > ID_BUFFER_SIZE-1) {
                     fprintf(stderr, "D: Failed to get user information: the identificator is too long\n");
                     is_success = false;
                 } else {
@@ -261,7 +274,7 @@ const UserInfo* DbUtility::getUserInfo(const char *username) {
                     user_info.id[length] = '\0';
                 
                     length = strlen(row[1]);
-                    if (length > sizeof(user_info.username)-1) {
+                    if (length > USRNM_BUFFER_SIZE-1) {
                         fprintf(stderr, "D: Failed to get user information: the username is too long\n");
                         is_success = false;
                     } else {
@@ -275,7 +288,11 @@ const UserInfo* DbUtility::getUserInfo(const char *username) {
                 is_success = false;
             }
         } else if (mysql_field_count(sql_handle_)) {
-            fprintf(stderr, "D: Failed to find the user '%s': %s \n", username, mysql_error(sql_handle_));    
+            if (is_username) {
+                fprintf(stderr, "D: Failed to find the username '%s': %s \n", info, mysql_error(sql_handle_));    
+            } else {
+                fprintf(stderr, "D: Failed to find the id '%s': %s \n", info, mysql_error(sql_handle_));    
+            }
             is_success = false;    
         } 
 

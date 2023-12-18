@@ -22,7 +22,8 @@ public:
     bool isUserExist(const char* username, const char* password);
     bool isUsernameExist(const char* username);
 
-    const UserInfo* getUserInfo(const char* username);
+    const UserInfo* getUserInfoByUsername(const char* username);
+    const UserInfo* getUserInfoById(const char* id);
     std::vector<FetchedMessage> getAllMessages(const char* id, bool new_flag);
     std::vector<std::string> getAllSendersId(const char* to_id, bool new_flag);
     std::vector<std::pair<std::string, std::string>> getMessagesFromId(const char* to_id, 
@@ -38,6 +39,8 @@ private:
 
     void closeConnection();
     void closeConnectionWithError(const char* message);
+
+    const UserInfo* getUserInfo(const char* info, bool is_username);
 };
 
 #endif // DBUTILITY_H

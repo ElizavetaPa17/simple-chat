@@ -16,7 +16,7 @@ public:
     ~MessagesArea();
 
     void displayMessages();
-    void resetMessages(std::vector<QString>& senders_id);
+    void resetMessages(std::vector<UserInfo>& senders);
     void displayFoundUser(const char* id, const char* username);
     void displayNotFoundUser();
 

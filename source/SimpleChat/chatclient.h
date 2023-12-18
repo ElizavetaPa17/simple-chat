@@ -13,8 +13,6 @@
 #include "stdio.h"
 
 #include <QString>
-#include <string>
-#include <map>
 
 #include "constants.h"
 
@@ -22,20 +20,15 @@ class ChatClient final {
 private:
     using socket_t = int;
 
-    struct ClientInfo {
-        char id[ID_BUFFER_SIZE]{};
-        char username[USRNM_BUFFER_SIZE]{};
-    };
-
     socket_t client_socket_;
-    ClientInfo client_info_;
-    ClientInfo find_user_info_;
+    UserInfo client_info_;
+    UserInfo find_user_info_;
     char receiver_id_[ID_BUFFER_SIZE]{};
     char input_buffer_[CLIENT_RECEIVE_BUFFER_SZ];
 
     bool getAuthRespond();
     bool getFindRespond();
-    std::multimap<int, std::pair<QString, QString>> getAllMsgRespond();
+    //std::multimap<int, std::pair<QString, QString>> getAllMsgRespond();
     std::vector<QString> getAllSendersIdRespond();
 
     void setupAddrInfoHints(addrinfo& hints);
@@ -50,12 +43,12 @@ public:
     const char*       getClientUsername();
     void              prepareReceiverID(const char* id);
     void              sendMessage(const char* text);
-    bool              findUser(const char* username);
-    const ClientInfo* getFoundUser();
+    bool              findUser(const char* user_info, bool is_username);
+    const UserInfo* getFoundUser();
 
-    std::vector<QString> getAllSendersId(bool new_flag);
-    std::multimap<int, std::pair<QString, QString>> getNewMessages();
-    std::multimap<int, std::pair<QString, QString>> getAllMessages();
+    std::vector<UserInfo> getAllSendersInfo(bool new_flag);
+   /* std::multimap<int, std::pair<QString, QString>> getNewMessages();
+    std::multimap<int, std::pair<QString, QString>> getAllMessages();*/
 };
 
 #endif // CHATCLIENT_H

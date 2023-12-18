@@ -7,7 +7,7 @@ MessageWidget::MessageWidget(const QString& id, const QString& username, const Q
     : QWidget(parent)
 {
     setMouseTracking(true);
-    setupDesign(id);
+    setupDesign(id + "/" + username);
 }
 
 MessageWidget::~MessageWidget() {

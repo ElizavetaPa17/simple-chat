@@ -37,7 +37,7 @@ void MessagesArea::displayMessages() {
     widget()->layout()->addWidget(wdgt);
 }
 
-void MessagesArea::resetMessages(std::vector<QString>& senders_id) {
+void MessagesArea::resetMessages(std::vector<UserInfo>& senders) {
     users_chat_id_.clear();
     clearArea();
     widget()->layout()->setAlignment(Qt::AlignTop);
@@ -45,11 +45,11 @@ void MessagesArea::resetMessages(std::vector<QString>& senders_id) {
     MessageWidget* msg_widget = nullptr;
     int id = 0;
 
-    for (auto& item: senders_id) {
-        id = item.toUtf8().toInt();
+    for (auto& item: senders) {
+        id = QString(item.id).toInt();
         users_chat_id_.insert(id);
 
-        msg_widget = new MessageWidget(item, "username", "date");
+        msg_widget = new MessageWidget(item.id, item.username, "date");
         widget()->layout()->addWidget(msg_widget);
     }
 }

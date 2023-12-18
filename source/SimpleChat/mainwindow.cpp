@@ -64,9 +64,9 @@ void MainWindow::handleFailedAuthentification() {
 void MainWindow::sltSendAuthInfo(const char* username, const char* password, int auth_type) {
     if (client_.authorizeUser(username, password, auth_type)) {
         handleSuccessAuthentification(auth_type);
-        std::vector<QString> senders_id = client_.getAllSendersId(false);
+        std::vector<UserInfo> senders_id = client_.getAllSendersInfo(false);
         for (auto& id : senders_id) {
-            qDebug() << id;
+            qDebug() << id.id;
         }
 
         main_window_ui_->messagesArea->resetMessages(senders_id);
@@ -92,7 +92,7 @@ void MainWindow::sltFindUser(const char *username) {
         return;
     }
 
-    if (client_.findUser(username)) {
+    if (client_.findUser(username, true)) {
         main_window_ui_->messagesArea->displayFoundUser(client_.getFoundUser()->id, client_.getFoundUser()->username);
     } else {
         main_window_ui_->messagesArea->displayNotFoundUser();

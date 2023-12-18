@@ -127,14 +127,19 @@ bool ChatClient::getAuthRespond() {
     }
 }
 
-bool ChatClient::findUser(const char* username) {
+bool ChatClient::findUser(const char* user_info, bool is_username) {
     memset(find_user_info_.id, 0, ID_BUFFER_SIZE);
     memset(find_user_info_.username, 0, USRNM_BUFFER_SIZE);
 
     QString message;
     message += QString(FIND_CONNECTION) + "\n";
     message += "DATA: \n";
-    message += "Username: " + QString(username) + "\n";
+
+    if (is_username) {
+        message += "Username: " + QString(user_info) + "\n";
+    } else {
+        message += "Id: " + QString(user_info) + "\n";
+    }
 
     fprintf(stdout, "C: Sending FIND request...\n");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
@@ -177,11 +182,11 @@ void ChatClient::parseFindRespond() {
     find_user_info_.username[offset] = '\0';
 }
 
-const typename ChatClient::ClientInfo* ChatClient::getFoundUser() {
+const UserInfo* ChatClient::getFoundUser() {
     return &find_user_info_;
 }
 
-std::vector<QString> ChatClient::getAllSendersId(bool new_flag) {
+std::vector<UserInfo> ChatClient::getAllSendersInfo(bool new_flag) {
     QString message;
     message += QString(GTAMS_FRID_CONNECTION) + "\n";
     message += QString("DATA: ");
@@ -189,9 +194,17 @@ std::vector<QString> ChatClient::getAllSendersId(bool new_flag) {
 
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
         fprintf(stderr, "C: Failed to send GTAMS_FRID request: %d\n", errno);
-        return std::vector<QString>(0);
+        return std::vector<UserInfo>(0);
     } else {
-        return getAllSendersIdRespond();
+        std::vector<QString> senders_id = getAllSendersIdRespond();
+        std::vector<UserInfo> senders_info;
+        for (auto& id : senders_id) {
+            if (findUser(id.toStdString().c_str(), false)) {
+                senders_info.push_back(find_user_info_);
+            }
+        }
+
+        return senders_info;
     }
 }
 
@@ -220,7 +233,7 @@ std::vector<QString> ChatClient::getAllSendersIdRespond() {
     return senders_id;
 }
 
-//DELETE
+/*
 std::multimap<int, std::pair<QString, QString>> ChatClient::getNewMessages() {
     QString message;
     message += QString(GTNMS_CONNECTION) + "\n";
@@ -290,3 +303,4 @@ std::multimap<int, std::pair<QString, QString>> ChatClient::getAllMsgRespond() {
     fprintf(stdout, "C: Get message respond.\n");
     return messages;
 }
+*/

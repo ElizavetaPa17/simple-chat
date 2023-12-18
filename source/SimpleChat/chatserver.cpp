@@ -150,7 +150,7 @@ void ChatServer::handleLoginConnection(char* data, socket_t sngl_socket, ClientI
         if (database_.isUserExist(client.username, client.password)) {
             fprintf(stdout, "S: Successfull client login.\n");
             const UserInfo* user_info;
-            user_info = database_.getUserInfo(client.username);
+            user_info = database_.getUserInfoByUsername(client.username);
 
             char message[30]{};
             sprintf(message, "DATA: \nid: %s\n", user_info->id);
@@ -179,7 +179,7 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
             sendRespond(NULL, AUTH_ERROR_RSPND, sngl_socket);
         } else {
             const UserInfo* user_info;
-            user_info = database_.getUserInfo(client.username);
+            user_info = database_.getUserInfoByUsername(client.username);
 
             char message[30]{};
             sprintf(message, "DATA: \nid: %s\n", user_info->id);
@@ -191,43 +191,57 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
 void ChatServer::handleFindConnection(char* data, socket_t sngl_socket) {
     static char message[150]{};
 
-    char *p = NULL, *username = NULL;
-    size_t usr_sz = 0;
+    char *p = NULL, *info = NULL;
+    const UserInfo* user_info = NULL;
+    size_t info_sz = 0;
 
     if ((p = strstr(data, "Username: "))) {
-        username = p + sizeof("Username: ")-1;
+        info = p + sizeof("Username: ")-1;
         p = strstr(p, "\n");
         *p = '\0';
-        usr_sz = p - username;
+        info_sz = p - info;
 
-        if (usr_sz > sizeof(UserInfo().username)) {
+        if (info_sz > USRNM_BUFFER_SIZE) {
             fprintf(stderr, "S: Username is too long for searching.\n");
             sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
-        } else {
-            const UserInfo* user_info = NULL;
-            if ((user_info = database_.getUserInfo(username)) != NULL) {
-                size_t offset = sizeof("DATA: \nid: ")-1;
-                memcpy(message, "DATA: \n"
-                                "id: ", offset);
-                memcpy(message + offset, user_info->id, strlen(user_info->id));
-                offset += strlen(user_info->id);
-                
-                memcpy(message + offset, "\nUsername: ", sizeof("\nUsername: ")-1);
-                offset += sizeof("\nUsername: ")-1;
-
-                memcpy(message + offset, user_info->username, strlen(user_info->username));
-                offset += strlen(user_info->username);
-                message[offset] = '\n';
-                message[++offset] = '\0';
-                
-                sendRespond(message, OK_RSPND, sngl_socket);
-            } else {
-                sendRespond(NULL, NTFD_ERROR_RSPND, sngl_socket);
-            }
         }
+        
+        user_info = database_.getUserInfoByUsername(info);
+    } else if ((p = strstr(data, "Id: "))) {
+        info = p + sizeof("Id: ")-1;
+        p = strstr(p, "\n");
+        *p = '\0';
+        info_sz = p - info;
+
+        if (info_sz > USRNM_BUFFER_SIZE) {
+            fprintf(stderr, "S: Username is too long for searching.\n");
+            sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
+        }
+
+        user_info = database_.getUserInfoById(info);
     } else {
         fprintf(stderr, "S: Incorrect find request received.\n\n");
         sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
+    }
+    
+    if (user_info != NULL) {
+        size_t offset = sizeof("DATA: \nid: ")-1;
+        memcpy(message, "DATA: \n"
+                        "id: ", offset);
+        memcpy(message + offset, user_info->id, strlen(user_info->id));
+        offset += strlen(user_info->id);
+                
+        memcpy(message + offset, "\nUsername: ", sizeof("\nUsername: ")-1);
+        offset += sizeof("\nUsername: ")-1;
+
+        memcpy(message + offset, user_info->username, strlen(user_info->username));
+        offset += strlen(user_info->username);
+        message[offset] = '\n';
+        message[++offset] = '\0';
+                
+        sendRespond(message, OK_RSPND, sngl_socket);
+    } else {
+        sendRespond(NULL, NTFD_ERROR_RSPND, sngl_socket);
     }
 }
 
