@@ -9,9 +9,12 @@
 #include <unistd.h>
 #include <cstring>
 #include <errno.h>
-
 #include "stdlib.h"
 #include "stdio.h"
+
+#include <QString>
+#include <string>
+#include <map>
 
 #include "constants.h"
 
@@ -32,12 +35,11 @@ private:
 
     bool getAuthRespond();
     bool getFindRespond();
-    bool getAllMsgRespond();
+    std::multimap<int, std::pair<QString, QString>> getAllMsgRespond();
+    std::vector<QString> getAllSendersIdRespond();
 
     void setupAddrInfoHints(addrinfo& hints);
     void parseFindRespond();
-
-    void getNewMessages();
 
 public:
     ChatClient();
@@ -51,6 +53,9 @@ public:
     bool              findUser(const char* username);
     const ClientInfo* getFoundUser();
 
+    std::vector<QString> getAllSendersId(bool new_flag);
+    std::multimap<int, std::pair<QString, QString>> getNewMessages();
+    std::multimap<int, std::pair<QString, QString>> getAllMessages();
 };
 
 #endif // CHATCLIENT_H

@@ -7,7 +7,7 @@
 class MessageWidget : public QWidget {
     Q_OBJECT
 public:
-    MessageWidget(QWidget* parent = nullptr, const QString& text = QString(""));
+    MessageWidget(const QString& id, const QString& username, const QString& date, QWidget* parent = nullptr);
     ~MessageWidget();
 
 protected:
@@ -20,6 +20,7 @@ private:
     const char* sender_id_;
     QLabel  profile_photo_;
     QLabel  sender_name_;
+    QLabel  date_;
 
     void setupDesign(const QString& text);
     void fetchID(const QString& text);

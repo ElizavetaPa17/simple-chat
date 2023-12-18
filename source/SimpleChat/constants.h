@@ -31,6 +31,8 @@ extern const char* RGSTR_CONNECTION;
 extern const char* FIND_CONNECTION;
 extern const char* SEND_CONNECTION;
 extern const char* GTNMS_CONNECTION;
+extern const char* GTAMS_CONNECTION;
+extern const char* GTAMS_FRID_CONNECTION;
 
 enum AuthentificationType {
     LOGIN,

@@ -31,10 +31,27 @@ void MessagesArea::displayMessages() {
     clearArea();
     widget()->layout()->setAlignment(Qt::AlignTop);
 
-    wdgt = new MessageWidget(this, "HI!");
+    wdgt = new MessageWidget("id", "username", "date", this);
     connect(wdgt, &MessageWidget::clicked, this, &MessagesArea::sltOpenChat);
 
     widget()->layout()->addWidget(wdgt);
+}
+
+void MessagesArea::resetMessages(std::vector<QString>& senders_id) {
+    users_chat_id_.clear();
+    clearArea();
+    widget()->layout()->setAlignment(Qt::AlignTop);
+
+    MessageWidget* msg_widget = nullptr;
+    int id = 0;
+
+    for (auto& item: senders_id) {
+        id = item.toUtf8().toInt();
+        users_chat_id_.insert(id);
+
+        msg_widget = new MessageWidget(item, "username", "date");
+        widget()->layout()->addWidget(msg_widget);
+    }
 }
 
 void MessagesArea::displayFoundUser(const char* id, const char* username) {

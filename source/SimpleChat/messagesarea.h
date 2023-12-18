@@ -4,6 +4,9 @@
 #include "QScrollArea"
 #include "QVBoxLayout"
 
+#include <set>
+#include <utility>
+
 #include "constants.h"
 
 class MessagesArea : public QScrollArea {
@@ -13,10 +16,12 @@ public:
     ~MessagesArea();
 
     void displayMessages();
+    void resetMessages(std::vector<QString>& senders_id);
     void displayFoundUser(const char* id, const char* username);
     void displayNotFoundUser();
 
 private:
+    std::set<int> users_chat_id_;
     void clearArea();
 
 private slots:

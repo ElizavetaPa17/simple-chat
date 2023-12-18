@@ -130,8 +130,12 @@ void ChatServer::parseReadData(char* data, socket_t sngl_socket, ClientInfo& cli
         handleFindConnection(data, sngl_socket);
     } else if (strstr(data, SEND_CONNECTION)) {
         handleSendConnection(data, sngl_socket);
+    } else if (strstr(data, GTAMS_FRID_CONNECTION)) {
+        handleGetSendersInfoConnection(data, sngl_socket, false);
     } else if (strstr (data, GTNMS_CONNECTION)) {
-        handleGetNewMessagesConnection(data, sngl_socket);
+        handleGetMessagesConnection(data, sngl_socket, true);
+    } else if (strstr (data, GTAMS_CONNECTION)) {
+        handleGetMessagesConnection(data, sngl_socket, false);
     } else {
         fprintf(stdout, "S: Receive unknown type of connection\n");
     }
@@ -250,12 +254,35 @@ void ChatServer::handleSendConnection(char* data, socket_t sngl_socket) {
     database_.addMessage(from_id, to_id, date, text);
 }
 
-void ChatServer::handleGetNewMessagesConnection(char *data, socket_t sngl_socket) {
+void ChatServer::handleGetSendersInfoConnection(char* data, socket_t sngl_socket, bool new_flag) {
+    char* p_id = data;
+    p_id = strstr(p_id, "Receiver_id: ") + sizeof("Receiver_id ")-1;
+    p_id[strstr(p_id, "\n")-p_id] = '\0';
+
+    std::vector<std::string> senders_id = database_.getAllSendersId(p_id, new_flag);
+    std::stringstream ss;
+    for (int i = 0; i < senders_id.size(); ++i) {
+        ss << "DATA: \nSender_id: " << senders_id[i] << '\n';
+
+        if (ss.str().size() > SERVER_RESPOND_BUFFER_SZ-50) {
+            sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
+            ss = std::stringstream();
+        }
+    }
+
+    if (ss.str().size() != 0) {
+        sendRespond(ss.str().c_str(), ENDSND_RSPND, sngl_socket);
+    } else {
+        sendRespond(NULL, ENDSND_RSPND, sngl_socket);
+    }
+}
+
+void ChatServer::handleGetMessagesConnection(char *data, socket_t sngl_socket, bool new_flag) {
     char* p_id = data;
     p_id = strstr(p_id, "id: ") + sizeof("id: ")-1;
     p_id[strstr(p_id, "\n")-p_id] = '\0';
 
-    std::vector<FetchedMessage> messages = database_.getAllNewMessages(p_id);
+    std::vector<FetchedMessage> messages = database_.getAllMessages(p_id, new_flag);
     std::stringstream ss;
     for (int i = 0; i < messages.size(); ++i) {
         ss << "DATA: \nSender_id: " << messages[i].from_id;
@@ -289,7 +316,6 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
         case ENDSND_RSPND:
             memcpy(buffer + offset, "ENDSND\n", sizeof("ENDSND\n")-1);
             offset += sizeof("ENDSND\n")-1;
-            fprintf(stderr, "S: ENDSND\n");
             break;
         case AUTH_ERROR_RSPND:
             memcpy(buffer + offset, "AUTH_ERROR\n", sizeof("AUTH_ERROR\n")-1);

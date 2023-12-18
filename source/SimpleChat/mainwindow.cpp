@@ -64,6 +64,12 @@ void MainWindow::handleFailedAuthentification() {
 void MainWindow::sltSendAuthInfo(const char* username, const char* password, int auth_type) {
     if (client_.authorizeUser(username, password, auth_type)) {
         handleSuccessAuthentification(auth_type);
+        std::vector<QString> senders_id = client_.getAllSendersId(false);
+        for (auto& id : senders_id) {
+            qDebug() << id;
+        }
+
+        main_window_ui_->messagesArea->resetMessages(senders_id);
     } else {
         handleFailedAuthentification();
     }

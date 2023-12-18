@@ -3,11 +3,11 @@
 #include "QHBoxLayout"
 #include "QEnterEvent"
 
-MessageWidget::MessageWidget(QWidget* parent, const QString& text)
+MessageWidget::MessageWidget(const QString& id, const QString& username, const QString& date, QWidget* parent)
     : QWidget(parent)
 {
     setMouseTracking(true);
-    setupDesign(text);
+    setupDesign(id);
 }
 
 MessageWidget::~MessageWidget() {
@@ -29,9 +29,6 @@ void MessageWidget::setupDesign(const QString& text) {
     setFixedHeight(100);
 }
 
-void MessageWidget::fetchID(const QString &text) {
-
-}
 void MessageWidget::enterEvent(QEnterEvent* event) {
     setCursor(Qt::PointingHandCursor);
 }
