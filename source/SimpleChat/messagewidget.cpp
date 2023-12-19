@@ -3,27 +3,33 @@
 #include "QHBoxLayout"
 #include "QEnterEvent"
 
-MessageWidget::MessageWidget(const QString& id, const QString& username, const QString& date, QWidget* parent)
+MessageWidget::MessageWidget(const QString& dest_id, const QString& dest_username, const QString& date, QWidget* parent)
     : QWidget(parent)
 {
     setMouseTracking(true);
-    setupDesign(id + "/" + username);
+    setupDesign(dest_id, dest_username);
+
+    sender_id_ = dest_id;
+    sender_name_ = dest_username;
 }
 
 MessageWidget::~MessageWidget() {
 }
 
-void MessageWidget::setupDesign(const QString& text) {
-    sender_name_.setText(text);
+void MessageWidget::setupDesign(const QString& dest_id, const QString& dest_username) {
+    profile_name_.setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    profile_name_.setStyleSheet(".QLabel { font: 700 12pt \"ori1Uni\"; }");
+    profile_name_.setText("ID: " + dest_id + "\nUsername: " + dest_username);
 
     QPixmap pixmap;
     pixmap.load(":../resources/icon/profile_icon.png");
     pixmap = pixmap.scaled(70, 70);
     profile_photo_.setPixmap(pixmap);
+    profile_photo_.setFixedSize(71, 71);
 
     QHBoxLayout* hzLayout = new QHBoxLayout;
     hzLayout->addWidget(&profile_photo_);
-    hzLayout->addWidget(&sender_name_);
+    hzLayout->addWidget(&profile_name_);
     setLayout(hzLayout);
 
     setFixedHeight(100);
@@ -38,5 +44,5 @@ void MessageWidget::leaveEvent(QEvent* event) {
 }
 
 void MessageWidget::mousePressEvent(QMouseEvent* event) {
-    emit clicked("test id", "test name");
+    emit clicked(sender_id_.toStdString().c_str(), sender_name_.toStdString().c_str());
 }

@@ -7,7 +7,7 @@
 class MessageWidget : public QWidget {
     Q_OBJECT
 public:
-    MessageWidget(const QString& id, const QString& username, const QString& date, QWidget* parent = nullptr);
+    MessageWidget(const QString& dest_id, const QString& dest_username, const QString& date, QWidget* parent = nullptr);
     ~MessageWidget();
 
 protected:
@@ -17,16 +17,17 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
 
 private:
-    const char* sender_id_;
-    QLabel  profile_photo_;
-    QLabel  sender_name_;
-    QLabel  date_;
+    QString sender_id_;
+    QString sender_name_;
 
-    void setupDesign(const QString& text);
-    void fetchID(const QString& text);
+    QLabel  profile_photo_;
+    QLabel  profile_name_;
+    //QLabel  date_;
+
+    void setupDesign(const QString& dest_id, const QString& dest_username);
 
 signals:
-    void clicked(const char* id, const char* username);
+    void clicked(const char* dest_id, const char* dest_username);
 };
 
 #endif // MESSAGEWIDGET_H

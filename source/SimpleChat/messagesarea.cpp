@@ -50,6 +50,7 @@ void MessagesArea::resetMessages(std::vector<UserInfo>& senders) {
         users_chat_id_.insert(id);
 
         msg_widget = new MessageWidget(item.id, item.username, "date");
+        connect(msg_widget, &MessageWidget::clicked, this, &MessagesArea::sltOpenChat);
         widget()->layout()->addWidget(msg_widget);
     }
 }
