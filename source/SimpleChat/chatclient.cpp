@@ -188,12 +188,12 @@ const UserInfo* ChatClient::getFoundUser() {
 
 std::vector<UserInfo> ChatClient::getAllSendersInfo(bool new_flag) {
     QString message;
-    message += QString(GTAMS_FRID_CONNECTION) + "\n";
+    message += QString(GTASND_TOID_CONNECTION) + "\n";
     message += QString("DATA: ");
     message += QString("Receiver_id: ") + client_info_.id + '\n';
 
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
-        fprintf(stderr, "C: Failed to send GTAMS_FRID request: %d\n", errno);
+        fprintf(stderr, "C: Failed to send GTASND_TOID request: %d\n", errno);
         return std::vector<UserInfo>(0);
     } else {
         std::vector<QString> senders_id = getAllSendersIdRespond();
@@ -212,18 +212,18 @@ std::vector<QString> ChatClient::getAllSendersIdRespond() {
     std::vector<QString> senders_id;
 
     while (recv(client_socket_, input_buffer_, sizeof(input_buffer_), 0) > 0) {
-            char *p = input_buffer_;
-            char id[ID_BUFFER_SIZE];
-            size_t sz = 0;
+        char *p = input_buffer_;
+        char id[ID_BUFFER_SIZE];
+        size_t sz = 0;
 
-            while ((p = strstr(p, "Sender_id:"))) {
-                p += sizeof("Sender_id:");
-                sz = strstr(p, "\n")-p;
-                memcpy(id, p, sz);
-                id[sz] = 0;
+        while ((p = strstr(p, "Sender_id:"))) {
+            p += sizeof("Sender_id:");
+            sz = strstr(p, "\n")-p;
+            memcpy(id, p, sz);
+            id[sz] = 0;
 
-                senders_id.push_back(id);
-            }
+            senders_id.push_back(id);
+        }
 
         if (strstr(input_buffer_, "CODE: ENDSND")) {
             break;
@@ -231,6 +231,69 @@ std::vector<QString> ChatClient::getAllSendersIdRespond() {
     }
 
     return senders_id;
+}
+
+std::vector<FetchedMessage> ChatClient::getAllSenderMessages() {
+    QString message;
+    message += QString(GTAMS_FRID_CONNECTION) + '\n';
+    message += "DATA: \n";
+    message += QString("Receiver_id: ") + client_info_.id + '\n';
+    message += QString("Sender_id: ") + find_user_info_.id + '\n';
+
+    if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
+        fprintf(stderr, "C: Failed to send GTAMS_FRID request: %d\n", errno);
+        return std::vector<FetchedMessage>(0);
+    } else {
+        std::vector<FetchedMessage> messages;
+        return getAllSendersMessagesResponse();
+    }
+}
+
+// чтение зависит от того, где был прерван процесс отправки сообщения
+std::vector<FetchedMessage> ChatClient::getAllSendersMessagesResponse() {
+    std::vector<FetchedMessage> messages;
+    while (recv(client_socket_, input_buffer_, sizeof(input_buffer_), 0) > 0) {
+        char *p = input_buffer_;
+        char sender_id[ID_BUFFER_SIZE];
+        char receiver_id[ID_BUFFER_SIZE];
+        char date[DATE_BUFFER_SIZE];
+        char text[MAX_MSG_SIZE]{};
+        size_t sz = 0;
+        fprintf(stderr, "input buffer: %s\n", input_buffer_);
+
+        while ((p = strstr(p, "Sender_id:"))) {
+            p += sizeof("Sender_id:");
+            sz = strstr(p, "\n")-p;
+            memcpy(sender_id, p, sz);
+            sender_id[sz] = 0;
+
+            p = strstr(p, "Receiver_id: ");
+            p += sizeof("Receiver_id:");
+            sz = strstr(p, "\n")-p;
+            memcpy(receiver_id, p, sz);
+            receiver_id[sz] = 0;
+
+            p = strstr(p, "Date: ");
+            p += sizeof("Date:");
+            sz = strstr(p, "\n")-p;
+            memcpy(date, p, sz);
+            date[sz] = 0;
+
+            p = strstr(p, "Text: ");
+            p += sizeof("Text:");
+            sz = strstr(p, TEXT_END_IDENTIF)-p;
+            memcpy(text, p, sz);
+            text[sz] = 0;
+
+            messages.push_back({sender_id, receiver_id, date, text});
+        }
+
+        if (strstr(input_buffer_, "CODE: ENDSND")) {
+            break;
+        }
+    }
+
+    return messages;
 }
 
 /*

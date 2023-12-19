@@ -28,8 +28,9 @@ private:
 
     bool getAuthRespond();
     bool getFindRespond();
-    //std::multimap<int, std::pair<QString, QString>> getAllMsgRespond();
+    std::vector<FetchedMessage> getAllSendersMessagesResponse();
     std::vector<QString> getAllSendersIdRespond();
+    //std::multimap<int, std::pair<QString, QString>> getAllMsgRespond();
 
     void setupAddrInfoHints(addrinfo& hints);
     void parseFindRespond();
@@ -47,6 +48,7 @@ public:
     const UserInfo* getFoundUser();
 
     std::vector<UserInfo> getAllSendersInfo(bool new_flag);
+    std::vector<FetchedMessage> getAllSenderMessages();
    /* std::multimap<int, std::pair<QString, QString>> getNewMessages();
     std::multimap<int, std::pair<QString, QString>> getAllMessages();*/
 };

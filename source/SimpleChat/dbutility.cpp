@@ -361,31 +361,24 @@ std::vector<std::string> DbUtility::getAllSendersId(const char *to_id, bool new_
     }
 }
 
-std::vector<std::pair<std::string, std::string>> DbUtility::getMessagesFromId(const char* to_id,
-                                                                              const char* from_id,
-                                                                              bool new_flag)
+std::vector<FetchedMessage> DbUtility::getMessagesCertId(const char* to_id, const char* from_id)
 {
     static std::string buffer;
     
-    if (new_flag) {
-        buffer = std::string("SELECT * FROM messages WHERE (to_id=\"") + to_id + "\" AND  from_id=\"" 
-                             + from_id + "\") AND is_new=\"1\"";
-    } else {
-        buffer = std::string("SELECT * FROM messages WHERE to_id=\"") + to_id + "\" AND from_id=\"" 
-                             + from_id + "\"";
-    }
+    buffer = std::string("SELECT * FROM messages WHERE to_id=\"") + to_id + "\" AND from_id=\"" 
+                         + from_id + "\" OR to_id=\"" + from_id + "\" AND from_id=\"" + to_id + "\"";
 
     if (mysql_query(sql_handle_, buffer.c_str())) {
         fprintf(stderr, "D: Failed to get new messages: %s\n", mysql_error(sql_handle_));
-        return std::vector<std::pair<std::string, std::string>>(0);
+        return std::vector<FetchedMessage>(0);
     } else {
         MYSQL_RES* result = mysql_store_result(sql_handle_);
-        std::vector<std::pair<std::string, std::string>> messages;
+        std::vector<FetchedMessage> messages;
 
         if (result) {
             MYSQL_ROW row;      
             while ((row = mysql_fetch_row(result))) {
-                messages.push_back({row[2], row[4]});
+                messages.push_back({row[0], row[1], row[2], row[4]});
             }
         }
 

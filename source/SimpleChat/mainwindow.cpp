@@ -84,6 +84,12 @@ void MainWindow::sltOpenChat(const char* id, const char* username) {
 
     main_window_ui_->chatStackedWidget->setCurrentIndex(0);
     main_window_ui_->chatUserUsername->setText("Chat with " + QString(username));
+
+    std::vector<FetchedMessage> messages = client_.getAllSenderMessages();
+    qDebug() << messages.size();
+    for (auto& item : messages) {
+        qDebug() << item.from_id << item.to_id << item.date << item.text;
+    }
 }
 
 void MainWindow::sltFindUser(const char *username) {

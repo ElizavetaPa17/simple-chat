@@ -7,7 +7,7 @@
 #define ISVALIDSOCKET(s) ((s) >= 0)
 
 const int RECV_SERVER_BUFFER_SIZE = 4096;
-const int SERVER_RESPOND_BUFFER_SZ = 4096;
+const int SERVER_RESPOND_BUFFER_SZ = 65835*2;
 const int CLIENT_RECEIVE_BUFFER_SZ = 300;
 const int MAX_DATABASE_SMALLINT_V  = 65535;
 const int MAX_MSG_SIZE = MAX_DATABASE_SMALLINT_V / 10;
@@ -30,9 +30,11 @@ extern const char* LOGIN_CONNECTION;
 extern const char* RGSTR_CONNECTION;
 extern const char* FIND_CONNECTION;
 extern const char* SEND_CONNECTION;
-extern const char* GTNMS_CONNECTION;
-extern const char* GTAMS_CONNECTION;
+
 extern const char* GTAMS_FRID_CONNECTION;
+extern const char* GTASND_TOID_CONNECTION;
+//extern const char* GTNMS_CONNECTION;
+//extern const char* GTAMS_CONNECTION;
 
 enum AuthentificationType {
     LOGIN,
@@ -55,6 +57,7 @@ struct UserInfo {
 
 struct FetchedMessage {
     std::string from_id;
+    std::string to_id;
     std::string date;
     std::string text;
 };

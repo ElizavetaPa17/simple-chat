@@ -3,7 +3,6 @@
 
 #include <mysql/mysql.h>
 #include <stddef.h>
-#include <utility>
 #include <string>
 #include <vector>
 
@@ -26,9 +25,7 @@ public:
     const UserInfo* getUserInfoById(const char* id);
     std::vector<FetchedMessage> getAllMessages(const char* id, bool new_flag);
     std::vector<std::string> getAllSendersId(const char* to_id, bool new_flag);
-    std::vector<std::pair<std::string, std::string>> getMessagesFromId(const char* to_id, 
-                                                                       const char* from_id, 
-                                                                       bool new_flag);
+    std::vector<FetchedMessage> getMessagesCertId(const char* to_id, const char* from_id);
 
 private:
     MYSQL* sql_handle_;
