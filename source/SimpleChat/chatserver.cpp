@@ -2,6 +2,7 @@
 #include <cstring>
 
 #include <vector>
+#include <string>
 #include <sstream>
 
 #include "constants.h"
@@ -303,25 +304,32 @@ void ChatServer::handleGetMessagesFromIdConnection(char* data, socket_t sngl_soc
     p_receiver_id[strstr(p_receiver_id, "\n")-p_receiver_id] = '\0';
 
     std::vector<FetchedMessage> messages = database_.getMessagesCertId(p_receiver_id, p_sender_id);
-    std::stringstream ss;
+    std::stringstream ss, temp;
     for (int i = 0; i < messages.size(); ++i) {
-        ss << "DATA: \nSender_id: " << messages[i].from_id
+        ss << "\nDATA: ";/* << std::to_string(sizeof("\nSender_id:") + messages[i].from_id.size() +
+                                           sizeof("\nReceiver_id:") + messages[i].to_id.size() + 
+                                           sizeof("\nDate:") + messages[i].date.size() + 
+                                           sizeof("\nText:") + messages[i].text.size()
+                                          );*/
+
+        ss << "\nSender_id: "   << messages[i].from_id
            << "\nReceiver_id: " << messages[i].to_id 
            << "\nDate: " << messages[i].date
            << "\nText: " << messages[i].text 
-           << TEXT_END_IDENTIF;
-        
-        if (ss.str().size() > (SERVER_RESPOND_BUFFER_SZ - (DATE_BUFFER_SIZE + ID_BUFFER_SIZE)*(i+1))) {
+           << TEXT_END_IDENTIF << std::flush;
+       
+        if (ss.str().size() > SERVER_RESPOND_BUFFER_SZ) {
             sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
             ss = std::stringstream();
         }
     }
     
     if (ss.str().size() != 0) {
-        sendRespond(ss.str().c_str(), ENDSND_RSPND, sngl_socket);
-    } else {
-        sendRespond(NULL, ENDSND_RSPND, sngl_socket);
+        sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
+        ss = std::stringstream();
     }
+
+    sendRespond(NULL, ENDSND_RSPND, sngl_socket);
 }
 
 void ChatServer::handleGetMessagesConnection(char *data, socket_t sngl_socket, bool new_flag) {
@@ -334,7 +342,8 @@ void ChatServer::handleGetMessagesConnection(char *data, socket_t sngl_socket, b
     for (int i = 0; i < messages.size(); ++i) {
         ss << "DATA: \nSender_id: " << messages[i].from_id;
         ss << "\nDate: " << messages[i].date;
-        ss << "\nText: " << messages[i].text << TEXT_END_IDENTIF;
+        ss << "\nText: " << messages[i].text 
+           << TEXT_END_IDENTIF;
         
         if (ss.str().size() > (SERVER_RESPOND_BUFFER_SZ - (DATE_BUFFER_SIZE + ID_BUFFER_SIZE)*(i+1))) {
             sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
@@ -387,16 +396,18 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
 
     if (msg) {
         size_t msg_sz = strlen(msg);
+        fprintf(stderr, "msg_sz: %ld\n", msg_sz);
         if (SERVER_RESPOND_BUFFER_SZ - offset - msg_sz < 2) {
             fprintf(stderr, "S: Failed to send respond: message is too long.");
             return false;
         }
 
         memcpy(buffer + offset, msg, msg_sz);
-        offset += msg_sz+1;
+        offset += msg_sz;
     } 
 
     buffer[offset] = '\0';
+    fprintf(stderr, "\n%s\n", buffer);
     if (send(sngl_socket, buffer, offset+1, 0) < 0) {
         fprintf(stderr, "S: Failed to send success respond: %d\n", errno);
         return false;

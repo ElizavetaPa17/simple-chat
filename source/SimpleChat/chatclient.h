@@ -41,11 +41,11 @@ public:
 
     bool authorizeUser(const char* username, const char* password, int auth_type);
 
-    const char*       getClientUsername();
+    const UserInfo&   getClientInfo();
     void              prepareReceiverID(const char* id);
     void              sendMessage(const char* text);
     bool              findUser(const char* user_info, bool is_username);
-    const UserInfo* getFoundUser();
+    const UserInfo*   getFoundUser();
 
     std::vector<UserInfo> getAllSendersInfo(bool new_flag);
     std::vector<FetchedMessage> getAllSenderMessages();

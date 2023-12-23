@@ -71,12 +71,8 @@ bool ChatClient::authorizeUser(const char* username, const char* password, int a
     }
 }
 
-const char* ChatClient::getClientUsername() {
-    if (strlen(client_info_.username) == 0) {
-        return NULL;
-    } else {
-        return client_info_.username;
-    }
+const UserInfo& ChatClient::getClientInfo() {
+    return client_info_;
 }
 
 void ChatClient::prepareReceiverID(const char* id) {
@@ -88,11 +84,11 @@ void ChatClient::sendMessage(const char* text) {
     message += QString(SEND_CONNECTION) + "\n";
     message += "DATE: " + QDateTime::currentDateTime().toString(DATABASE_DATE_FORMAT) + "\n";
     message += "SENDER_ID: " + QString(client_info_.id) + "\n";
-    message += "RECEIVER_ID: " + QString(receiver_id_) + "\n";
+    message += "RECEIVER_ID: " + QString(find_user_info_.id) + "\n";
     message += "DATA: \n";
     message += "Text: " + QString(text);
 
-    fprintf(stdout, "C: Sending SEND request...");
+    fprintf(stdout, "C: Sending SEND request...\n");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
         fprintf(stderr, "C: Sending SEND request failed: %d\n", errno);
         return; //false;
@@ -250,6 +246,7 @@ std::vector<FetchedMessage> ChatClient::getAllSenderMessages() {
 }
 
 // чтение зависит от того, где был прерван процесс отправки сообщения
+// проверить чтение при отправке большого пакета данных
 std::vector<FetchedMessage> ChatClient::getAllSendersMessagesResponse() {
     std::vector<FetchedMessage> messages;
     while (recv(client_socket_, input_buffer_, sizeof(input_buffer_), 0) > 0) {
@@ -257,11 +254,10 @@ std::vector<FetchedMessage> ChatClient::getAllSendersMessagesResponse() {
         char sender_id[ID_BUFFER_SIZE];
         char receiver_id[ID_BUFFER_SIZE];
         char date[DATE_BUFFER_SIZE];
-        char text[MAX_MSG_SIZE]{};
+        char text[MAX_MSG_SIZE];
         size_t sz = 0;
-        fprintf(stderr, "input buffer: %s\n", input_buffer_);
 
-        while ((p = strstr(p, "Sender_id:"))) {
+        while ((p = strstr(p, "Sender_id: "))) {
             p += sizeof("Sender_id:");
             sz = strstr(p, "\n")-p;
             memcpy(sender_id, p, sz);
@@ -282,6 +278,7 @@ std::vector<FetchedMessage> ChatClient::getAllSendersMessagesResponse() {
             p = strstr(p, "Text: ");
             p += sizeof("Text:");
             sz = strstr(p, TEXT_END_IDENTIF)-p;
+            fprintf(stderr, "sz: %ld", sz);
             memcpy(text, p, sz);
             text[sz] = 0;
 

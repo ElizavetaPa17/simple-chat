@@ -170,6 +170,7 @@ bool DbUtility::addUser(const char *username, const char *password) {
 
 bool DbUtility::addMessage(const char *from_id, const char *to_id, const char *date, const char *text) {
     static std::string buffer;
+    fprintf(stderr, "D: to_id: %s\n", to_id);
     buffer = std::string("INSERT INTO messages (from_id, to_id, send_date, msg_text) VALUES"
                          "('") + from_id + "','" + to_id + "','" + date + "','" + text + "')";
 

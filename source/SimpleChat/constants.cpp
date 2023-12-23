@@ -1,6 +1,6 @@
 #include "constants.h"
 
-const char* TEXT_END_IDENTIF = "\f";
+const char* TEXT_END_IDENTIF = "_end_62jEAod)1%91KCna";
 
 const char* SERVER_ADDRESS = NULL;
 const char* SERVER_SERVICE = "8080";

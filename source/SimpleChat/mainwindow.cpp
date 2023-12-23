@@ -48,10 +48,10 @@ void MainWindow::setupConnection() {
 void MainWindow::handleSuccessAuthentification(int auth_type) {
     if (auth_type == LOGIN) {
         main_window_ui_->welcomeTextLabel->setText(QString("Nice to see you again, ") +
-                                                            client_.getClientUsername() + "!");
+                                                            client_.getClientInfo().username + "!");
     } else { /* auth_type = RGSTR*/
         main_window_ui_->welcomeTextLabel->setText(QString("Thank for registration, ") +
-                                                            client_.getClientUsername() + "!");
+                                                            client_.getClientInfo().username + "!");
     }
 
     main_window_ui_->stackedMainWidget->setCurrentIndex(2);
@@ -65,9 +65,6 @@ void MainWindow::sltSendAuthInfo(const char* username, const char* password, int
     if (client_.authorizeUser(username, password, auth_type)) {
         handleSuccessAuthentification(auth_type);
         std::vector<UserInfo> senders_id = client_.getAllSendersInfo(false);
-        for (auto& id : senders_id) {
-            qDebug() << id.id;
-        }
 
         main_window_ui_->messagesArea->resetMessages(senders_id);
     } else {
@@ -80,20 +77,22 @@ void MainWindow::sltSwitchPage() {
 }
 
 void MainWindow::sltOpenChat(const char* id, const char* username) {
-    client_.prepareReceiverID(id);
+    client_.findUser(id, false);
 
     main_window_ui_->chatStackedWidget->setCurrentIndex(0);
     main_window_ui_->chatUserUsername->setText("Chat with " + QString(username));
 
     std::vector<FetchedMessage> messages = client_.getAllSenderMessages();
-    qDebug() << messages.size();
-    for (auto& item : messages) {
+
+    /*for (auto& item : messages) {
         qDebug() << item.from_id << item.to_id << item.date << item.text;
-    }
+    }*/
+
+    main_window_ui_->chatArea->setMessages(messages, client_.getClientInfo().id);
 }
 
 void MainWindow::sltFindUser(const char *username) {
-    if (username == nullptr || !strcmp(username, client_.getClientUsername())) {
+    if (username == nullptr || !strcmp(username, client_.getClientInfo().username)) {
         main_window_ui_->messagesArea->displayNotFoundUser();
         return;
     }
