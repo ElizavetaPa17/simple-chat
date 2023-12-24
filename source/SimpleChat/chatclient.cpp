@@ -98,7 +98,7 @@ void ChatClient::setupAddrInfoHints(addrinfo& hints) {
     hints.ai_socktype = SOCK_STREAM;
 }
 
-void ChatClient::acceptingNewMessages() {
+void ChatClient::acceptingServerRespond() {
     fd_set master;
     FD_ZERO(&master);
     FD_SET(client_socket_+1, &master);
@@ -106,11 +106,27 @@ void ChatClient::acceptingNewMessages() {
 
     for (fd_set reads = master; true; reads = master) {
         if (select(client_socket_+1, &reads, NULL, NULL, NULL)) {
-            fprintf(stderr, "%s%d\n", "Failed to select: ", errno);
+            fprintf(stderr, "%s%d\n", "C: Failed to select: ", errno);
         } else {
-
+            if (recv(client_socket_, new_msg_buffer_, sizeof(new_msg_buffer_), 0) > 0) {
+                handleServerRespond();
+            } else {
+                fprintf(stdout, "C: Closing connection with the server.");
+                // close connection
+            }
         }
     }
+}
+/*
+    FindConnection - found, not_found
+    SendersInfoConnection - sender_info
+    GetMessagesFromCertIdConnection - messages
+*/
+
+void ChatClient::handleServerRespond() {
+   // if (strstr(input_buffer_, )) {
+
+   //}
 }
 
 bool ChatClient::getAuthRespond() {
@@ -119,7 +135,7 @@ bool ChatClient::getAuthRespond() {
         return false;
     } else {
         fprintf(stdout, "C: Received authentification respond from the server: ");
-        if (strstr(input_buffer_, "CODE: OK\n")) {
+        if (strstr(input_buffer_, AUTH_SCC_SRVR_RESPOND)) {
             fprintf(stdout, "OK.\n");
             char *p_id = strstr(input_buffer_, "id: ") + sizeof("id: ")-1;
             size_t id_sz = strstr(p_id, "\n") - p_id;
@@ -163,7 +179,7 @@ bool ChatClient::getFindRespond() {
         return false;
     } else {
         fprintf(stdout, "C: Received find respond from the server: ");
-        if (strstr(input_buffer_, "CODE: OK\n")) {
+        if (strstr(input_buffer_, FND_SRVR_RESPOND)) {
             fprintf(stdout, "OK.\n");
             parseFindRespond();
             return true;
@@ -233,7 +249,7 @@ std::vector<QString> ChatClient::getAllSendersIdRespond() {
             senders_id.push_back(id);
         }
 
-        if (strstr(input_buffer_, "CODE: ENDSND")) {
+        if (strstr(input_buffer_, END_SND_INFO_SRVR_RESPOND)) {
             break;
         }
     }
@@ -252,7 +268,6 @@ std::vector<FetchedMessage> ChatClient::getAllSenderMessages() {
         fprintf(stderr, "C: Failed to send GTAMS_FRID request: %d\n", errno);
         return std::vector<FetchedMessage>(0);
     } else {
-        std::vector<FetchedMessage> messages;
         return getAllSendersMessagesResponse();
     }
 }
@@ -290,17 +305,17 @@ std::vector<FetchedMessage> ChatClient::getAllSendersMessagesResponse() {
             p = strstr(p, "Text: ");
             p += sizeof("Text:");
             sz = strstr(p, TEXT_END_IDENTIF)-p;
-            fprintf(stderr, "sz: %ld", sz);
             memcpy(text, p, sz);
             text[sz] = 0;
 
             messages.push_back({sender_id, receiver_id, date, text});
         }
 
-        if (strstr(input_buffer_, "CODE: ENDSND")) {
+        if (strstr(input_buffer_, END_MSG_SRVR_RESPOND)) {
             break;
         }
     }
 
+    fprintf(stderr, "size: %ld\n", messages.size());
     return messages;
 }

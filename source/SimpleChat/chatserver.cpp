@@ -135,10 +135,6 @@ void ChatServer::parseReadData(char* data, socket_t sngl_socket, ClientInfo& cli
         handleGetSendersInfoConnection(data, sngl_socket, false);
     } else if (GTAMS_FRID_CONNECTION) {
         handleGetMessagesFromIdConnection(data, sngl_socket);
-      //} else if (strstr (data, GTNMS_CONNECTION)) {
-      //  handleGetMessagesConnection(data, sngl_socket, true);
-      //} else if (strstr (data, GTAMS_CONNECTION)) {
-      //  handleGetMessagesConnection(data, sngl_socket, false);
     } else {
         fprintf(stdout, "S: Receive unknown type of connection\n");
     }
@@ -157,7 +153,7 @@ void ChatServer::handleLoginConnection(char* data, socket_t sngl_socket, ClientI
 
             char message[30]{};
             sprintf(message, "DATA: \nid: %s\n", user_info->id);
-            sendRespond(message, OK_RSPND, sngl_socket);
+            sendRespond(message, AUTH_SUCCS_RSPND, sngl_socket);
         } else {
             fprintf(stdout, "S: Failed to login the client.\n");
 
@@ -206,7 +202,7 @@ void ChatServer::handleFindConnection(char* data, socket_t sngl_socket) {
 
         if (info_sz > USRNM_BUFFER_SIZE) {
             fprintf(stderr, "S: Username is too long for searching.\n");
-            sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
+            sendRespond(NULL, NTFD_ERROR_RSPND, sngl_socket);
         }
         
         user_info = database_.getUserInfoByUsername(info);
@@ -218,13 +214,13 @@ void ChatServer::handleFindConnection(char* data, socket_t sngl_socket) {
 
         if (info_sz > USRNM_BUFFER_SIZE) {
             fprintf(stderr, "S: Username is too long for searching.\n");
-            sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
+            sendRespond(NULL, NTFD_ERROR_RSPND, sngl_socket);
         }
 
         user_info = database_.getUserInfoById(info);
     } else {
         fprintf(stderr, "S: Incorrect find request received.\n\n");
-        sendRespond(NULL, RQST_ERROR_RSPND, sngl_socket);
+        sendRespond(NULL, NTFD_ERROR_RSPND, sngl_socket);
     }
     
     if (user_info != NULL) {
@@ -242,7 +238,7 @@ void ChatServer::handleFindConnection(char* data, socket_t sngl_socket) {
         message[offset] = '\n';
         message[++offset] = '\0';
                 
-        sendRespond(message, OK_RSPND, sngl_socket);
+        sendRespond(message, FND_RSPND, sngl_socket);
     } else {
         sendRespond(NULL, NTFD_ERROR_RSPND, sngl_socket);
     }
@@ -282,15 +278,15 @@ void ChatServer::handleGetSendersInfoConnection(char* data, socket_t sngl_socket
         ss << "DATA: \nSender_id: " << senders_id[i] << '\n';
 
         if (ss.str().size() > SERVER_RESPOND_BUFFER_SZ-50) {
-            sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
+            sendRespond(ss.str().c_str(), SND_INFO_RSPND, sngl_socket);
             ss = std::stringstream();
         }
     }
 
     if (ss.str().size() != 0) {
-        sendRespond(ss.str().c_str(), ENDSND_RSPND, sngl_socket);
+        sendRespond(ss.str().c_str(), END_SND_INFO_RSPND, sngl_socket);
     } else {
-        sendRespond(NULL, ENDSND_RSPND, sngl_socket);
+        sendRespond(NULL, END_SND_INFO_RSPND, sngl_socket);
     }
 }
 
@@ -306,12 +302,7 @@ void ChatServer::handleGetMessagesFromIdConnection(char* data, socket_t sngl_soc
     std::vector<FetchedMessage> messages = database_.getMessagesCertId(p_receiver_id, p_sender_id);
     std::stringstream ss, temp;
     for (int i = 0; i < messages.size(); ++i) {
-        ss << "\nDATA: ";/* << std::to_string(sizeof("\nSender_id:") + messages[i].from_id.size() +
-                                           sizeof("\nReceiver_id:") + messages[i].to_id.size() + 
-                                           sizeof("\nDate:") + messages[i].date.size() + 
-                                           sizeof("\nText:") + messages[i].text.size()
-                                          );*/
-
+        ss << "\nDATA: ";
         ss << "\nSender_id: "   << messages[i].from_id
            << "\nReceiver_id: " << messages[i].to_id 
            << "\nDate: " << messages[i].date
@@ -319,17 +310,17 @@ void ChatServer::handleGetMessagesFromIdConnection(char* data, socket_t sngl_soc
            << TEXT_END_IDENTIF << std::flush;
        
         if (ss.str().size() > SERVER_RESPOND_BUFFER_SZ) {
-            sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
+            sendRespond(ss.str().c_str(), MSG_RSPND, sngl_socket);
             ss = std::stringstream();
         }
     }
     
     if (ss.str().size() != 0) {
-        sendRespond(ss.str().c_str(), OK_RSPND, sngl_socket);
+        sendRespond(ss.str().c_str(), END_MSG_RSPND, sngl_socket);
         ss = std::stringstream();
+    } else {
+        sendRespond(NULL, END_MSG_RSPND, sngl_socket);
     }
-
-    sendRespond(NULL, ENDSND_RSPND, sngl_socket);
 }
 
 void ChatServer::handleGetMessagesConnection(char *data, socket_t sngl_socket, bool new_flag) {
@@ -366,28 +357,48 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
 
     switch (repsond) {
         case OK_RSPND: 
-            memcpy(buffer + offset, "OK\n", sizeof("OK\n")-1);
-            offset += sizeof("OK\n")-1;
+            memcpy(buffer + offset, OK_SRVR_RESPOND, strlen(OK_SRVR_RESPOND));
+            offset += strlen(OK_SRVR_RESPOND);
             break;
         case ENDSND_RSPND:
-            memcpy(buffer + offset, "ENDSND\n", sizeof("ENDSND\n")-1);
-            offset += sizeof("ENDSND\n")-1;
+            memcpy(buffer + offset, END_SRVR_RESPOND, strlen(END_SRVR_RESPOND));
+            offset += strlen(END_SRVR_RESPOND);
+            break;
+        case AUTH_SUCCS_RSPND:
+            memcpy(buffer + offset, AUTH_SCC_SRVR_RESPOND, strlen(AUTH_SCC_SRVR_RESPOND));
+            offset += strlen(AUTH_SCC_SRVR_RESPOND);
             break;
         case AUTH_ERROR_RSPND:
-            memcpy(buffer + offset, "AUTH_ERROR\n", sizeof("AUTH_ERROR\n")-1);
-            offset += sizeof("AUTH_ERROR\n")-1;
-            break;
-        case RQST_ERROR_RSPND:
-            memcpy(buffer + offset, "RQST_ERROR\n", sizeof("RQST_ERROR\n")-1);
-            offset += sizeof("AUTH_ERROR\n")-1;
+            memcpy(buffer + offset, AUTH_ERR_SRVR_RESPOND, strlen(AUTH_ERR_SRVR_RESPOND));
+            offset += strlen(AUTH_ERR_SRVR_RESPOND);
             break;
         case SRVR_ERROR_RSPND:
-            memcpy(buffer + offset, "SRVR_ERROR\n", sizeof("SRVR_ERROR\n")-1);
-            offset += sizeof("SRVR_ERROR\n")-1;
+            memcpy(buffer + offset, ERR_SRVR_RESPOND, strlen(ERR_SRVR_RESPOND));
+            offset += strlen(ERR_SRVR_RESPOND);
+            break;
+        case FND_RSPND:
+            memcpy(buffer + offset, FND_SRVR_RESPOND, strlen(FND_SRVR_RESPOND));
+            offset += strlen(FND_SRVR_RESPOND);
             break;
         case NTFD_ERROR_RSPND:
-            memcpy(buffer + offset, "NTFD_ERROR\n", sizeof("NTFD_ERROR\n")-1);
-            offset += sizeof("NTFD_ERROR\n")-1;
+            memcpy(buffer + offset, NFND_SRVR_RESPOND, strlen(NFND_SRVR_RESPOND));
+            offset += strlen(NFND_SRVR_RESPOND);
+            break;
+        case SND_INFO_RSPND:
+            memcpy(buffer + offset, SND_INFO_SRVR_RESPOND, strlen(SND_INFO_SRVR_RESPOND));
+            offset += strlen(SND_INFO_SRVR_RESPOND);
+            break;
+        case END_SND_INFO_RSPND:
+            memcpy(buffer + offset, END_SND_INFO_SRVR_RESPOND, strlen(END_SND_INFO_SRVR_RESPOND));
+            offset += strlen(END_SND_INFO_SRVR_RESPOND);
+            break;
+        case MSG_RSPND:
+            memcpy(buffer + offset, MSG_SRVR_RESPOND, strlen(MSG_SRVR_RESPOND));
+            offset += strlen(MSG_SRVR_RESPOND);
+            break;
+        case END_MSG_RSPND:
+            memcpy(buffer + offset, END_MSG_SRVR_RESPOND, strlen(END_MSG_SRVR_RESPOND));
+            offset += strlen(END_MSG_SRVR_RESPOND);
             break;
         default:
             fprintf(stderr, "S: Failed to send respond: unknown respond type.\n");

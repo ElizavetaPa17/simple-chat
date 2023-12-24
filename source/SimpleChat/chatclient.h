@@ -34,7 +34,8 @@ private:
     void setupAddrInfoHints(addrinfo& hints);
     void parseFindRespond();
 
-    void acceptingNewMessages();
+    void acceptingServerRespond();
+    void handleServerRespond();
 
 public:
     ChatClient();

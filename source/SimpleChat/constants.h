@@ -36,8 +36,18 @@ extern const char* SEND_CONNECTION;
 
 extern const char* GTAMS_FRID_CONNECTION;
 extern const char* GTASND_TOID_CONNECTION;
-//extern const char* GTNMS_CONNECTION;
-//extern const char* GTAMS_CONNECTION;
+
+extern const char* OK_SRVR_RESPOND;
+extern const char* ERR_SRVR_RESPOND;
+extern const char* END_SRVR_RESPOND;
+extern const char* NFND_SRVR_RESPOND;
+extern const char* FND_SRVR_RESPOND;
+extern const char* MSG_SRVR_RESPOND;
+extern const char* SND_INFO_SRVR_RESPOND;
+extern const char* END_MSG_SRVR_RESPOND;
+extern const char* END_SND_INFO_SRVR_RESPOND;
+extern const char* AUTH_ERR_SRVR_RESPOND;
+extern const char* AUTH_SCC_SRVR_RESPOND;
 
 enum AuthentificationType {
     LOGIN,
@@ -48,8 +58,14 @@ enum RespondCode {
     OK_RSPND,
     ENDSND_RSPND,
     AUTH_ERROR_RSPND,
+    AUTH_SUCCS_RSPND,
     RQST_ERROR_RSPND,
+    FND_RSPND,
     NTFD_ERROR_RSPND,
+    MSG_RSPND,
+    END_MSG_RSPND,
+    SND_INFO_RSPND,
+    END_SND_INFO_RSPND,
     SRVR_ERROR_RSPND,
 };
 
