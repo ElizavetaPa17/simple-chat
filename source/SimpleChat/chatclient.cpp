@@ -75,10 +75,6 @@ const UserInfo& ChatClient::getClientInfo() {
     return client_info_;
 }
 
-void ChatClient::prepareReceiverID(const char* id) {
-    memcpy(receiver_id_, id, ID_BUFFER_SIZE);
-}
-
 void ChatClient::sendMessage(const char* text) {
     QString message;
     message += QString(SEND_CONNECTION) + "\n";
@@ -100,6 +96,21 @@ void ChatClient::sendMessage(const char* text) {
 void ChatClient::setupAddrInfoHints(addrinfo& hints) {
     memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
+}
+
+void ChatClient::acceptingNewMessages() {
+    fd_set master;
+    FD_ZERO(&master);
+    FD_SET(client_socket_+1, &master);
+
+
+    for (fd_set reads = master; true; reads = master) {
+        if (select(client_socket_+1, &reads, NULL, NULL, NULL)) {
+            fprintf(stderr, "%s%d\n", "Failed to select: ", errno);
+        } else {
+
+        }
+    }
 }
 
 bool ChatClient::getAuthRespond() {
@@ -158,6 +169,7 @@ bool ChatClient::getFindRespond() {
             return true;
         } else {
             fprintf(stdout, "NOT FOUND.\n");
+            memset(&find_user_info_, 0, sizeof(find_user_info_));
             return false;
         }
     }
@@ -292,75 +304,3 @@ std::vector<FetchedMessage> ChatClient::getAllSendersMessagesResponse() {
 
     return messages;
 }
-
-/*
-std::multimap<int, std::pair<QString, QString>> ChatClient::getNewMessages() {
-    QString message;
-    message += QString(GTNMS_CONNECTION) + "\n";
-    message += "DATA: \n";
-    message += QString("id: ") + client_info_.id + '\n';
-
-    if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
-        fprintf(stderr, "C: Failed to send GTNMS request: %d\n", errno);
-        return std::multimap<int, std::pair<QString, QString>>();
-    } else {
-        fprintf(stdout, "C: Send GTNMS request.\n");
-        return getAllMsgRespond();
-    }
-}
-
-std::multimap<int, std::pair<QString, QString>> ChatClient::getAllMessages() {
-    QString message;
-    message += QString(GTAMS_CONNECTION) + "\n";
-    message += "DATA: \n";
-    message += QString("id: ") + client_info_.id + '\n';
-
-    if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
-        fprintf(stderr, "C: Failed to send GTAMS request: %d\n", errno);
-        return std::multimap<int, std::pair<QString, QString>>();
-    } else {
-        fprintf(stdout, "C: Send GTAMS request.\n");
-        return getAllMsgRespond();
-    }
-}
-
-std::multimap<int, std::pair<QString, QString>> ChatClient::getAllMsgRespond() {
-    std::multimap<int, std::pair<QString, QString>> messages;
-
-    while (recv(client_socket_, input_buffer_, sizeof(input_buffer_), 0) > 0) {
-            char *p = input_buffer_;
-            char sender_id[ID_BUFFER_SIZE];
-            char date[DATE_BUFFER_SIZE];
-            char text[MAX_MSG_SIZE]{};
-            size_t sz = 0;
-
-            while ((p = strstr(p, "Sender_id:"))) {
-                p += sizeof("Sender_id:");
-                sz = strstr(p, "\n")-p;
-                memcpy(sender_id, p, sz);
-                sender_id[sz] = 0;
-
-                p = strstr(p, "Date:");
-                p += sizeof("Date:");
-                sz = strstr(p, "\n")-p;
-                memcpy(date, p, sz);
-                date[sz] = 0;
-
-                p = strstr(p, "Text:");
-                p += sizeof("Text:");
-                sz = strstr(p, TEXT_END_IDENTIF)-p;
-                memcpy(text, p, sz);
-                text[sz] = 0;
-
-                messages.insert(std::pair(QString(sender_id).toUtf8().toInt(), std::pair(QString(date), QString(text))));
-            }
-
-        if (strstr(input_buffer_, "CODE: ENDSND")) {
-            break;
-        }
-    }
-
-    fprintf(stdout, "C: Get message respond.\n");
-    return messages;
-}
-*/

@@ -2,6 +2,7 @@
 #define CHATMESSAGETEXT_H
 
 #include <QTextEdit>
+#include <QFontMetrics>
 
 enum DesignAlignment {
     LEFT_ALIGN,

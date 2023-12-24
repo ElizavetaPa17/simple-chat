@@ -44,11 +44,51 @@ void ChatArea::setMessages(std::vector<FetchedMessage>& messages, const char* cl
         label = new ChatMessageText(item.text.c_str());
 
         if (item.from_id == client_id) {
-            ui->chatLayout->addWidget(label, ui->chatLayout->rowCount(), 1);
+            ui->chatLayout->addWidget(label, ui->chatLayout->rowCount(), 1, 1, 1);
             label->setupDesign(RIGHT_ALIGN);
+
+            if (ui->chatLayout->rowCount() == 2) {
+                insertEmptyLabel(RIGHT_ALIGN);
+            }
+
         } else {
-            ui->chatLayout->addWidget(label, ui->chatLayout->rowCount(), 0);
+            ui->chatLayout->addWidget(label, ui->chatLayout->rowCount(), 0, 1, 1);
             label->setupDesign(LEFT_ALIGN);
+
+            if (ui->chatLayout->rowCount() == 2) {
+                insertEmptyLabel(LEFT_ALIGN);
+            }
+        }
+    }
+}
+
+void ChatArea::insertEmptyLabel(int align_type) {
+    QLabel* empty_label = new QLabel("");
+    empty_label->setFixedWidth(FIXED_MSG_WIDTH+50);
+
+    if (align_type == RIGHT_ALIGN) {
+        ui->chatLayout->addWidget(empty_label, 0, 0, 1, 1);
+    } else {
+        ui->chatLayout->addWidget(empty_label, 0, 1, 1, 1);
+    }
+}
+
+void ChatArea::addMessage(const QString& text, bool is_outgoing) {
+    ChatMessageText* label = new ChatMessageText(text.toStdString().c_str());
+
+    if (is_outgoing) {
+        ui->chatLayout->addWidget(label, ui->chatLayout->rowCount(), 1, 1, 1);
+        label->setupDesign(RIGHT_ALIGN);
+
+        if (ui->chatLayout->rowCount() == 2) {
+            insertEmptyLabel(RIGHT_ALIGN);
+        }
+    } else {
+        ui->chatLayout->addWidget(label, ui->chatLayout->rowCount(), 0, 1, 1);
+        label->setupDesign(LEFT_ALIGN);
+
+        if (ui->chatLayout->rowCount() == 2) {
+            insertEmptyLabel(LEFT_ALIGN);
         }
     }
 }

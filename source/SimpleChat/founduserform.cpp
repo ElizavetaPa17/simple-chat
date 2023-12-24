@@ -30,7 +30,6 @@ void FoundUserForm::setUserInfo(const char* id, const char* username) {
     memcpy(dest_id_, id, ID_BUFFER_SIZE);
     memcpy(dest_username_, username, USRNM_BUFFER_SIZE);
 
-    qDebug() << "ID: " << dest_id_;
     ui->userIDLabel->setText(QString("ID: ") + id);
     ui->usernameLabel->setText(QString("Username: ") + username);
 }
@@ -44,6 +43,5 @@ void FoundUserForm::leaveEvent(QEvent* event) {
 }
 
 void FoundUserForm::mousePressEvent(QMouseEvent* event) {
-    qDebug() << "foundform:" << dest_id_;
     emit clicked(dest_id_, dest_username_);
 }

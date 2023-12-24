@@ -65,7 +65,6 @@ void MainWindow::sltSendAuthInfo(const char* username, const char* password, int
     if (client_.authorizeUser(username, password, auth_type)) {
         handleSuccessAuthentification(auth_type);
         std::vector<UserInfo> senders_id = client_.getAllSendersInfo(false);
-
         main_window_ui_->messagesArea->resetMessages(senders_id);
     } else {
         handleFailedAuthentification();
@@ -84,15 +83,15 @@ void MainWindow::sltOpenChat(const char* id, const char* username) {
 
     std::vector<FetchedMessage> messages = client_.getAllSenderMessages();
 
-    /*for (auto& item : messages) {
-        qDebug() << item.from_id << item.to_id << item.date << item.text;
-    }*/
-
     main_window_ui_->chatArea->setMessages(messages, client_.getClientInfo().id);
 }
 
 void MainWindow::sltFindUser(const char *username) {
-    if (username == nullptr || !strcmp(username, client_.getClientInfo().username)) {
+    if (username == nullptr) {
+        std::vector<UserInfo> senders_id = client_.getAllSendersInfo(false);
+        main_window_ui_->messagesArea->resetMessages(senders_id);
+        return;
+    } else if (!strcmp(username, client_.getClientInfo().username)) {
         main_window_ui_->messagesArea->displayNotFoundUser();
         return;
     }
@@ -106,4 +105,5 @@ void MainWindow::sltFindUser(const char *username) {
 
 void MainWindow::sltSendMessage(const char* text) {
     client_.sendMessage(text);
+    main_window_ui_->chatArea->addMessage(text, true);
 }

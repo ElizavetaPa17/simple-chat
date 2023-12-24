@@ -23,17 +23,18 @@ private:
     socket_t client_socket_;
     UserInfo client_info_;
     UserInfo find_user_info_;
-    char receiver_id_[ID_BUFFER_SIZE]{};
     char input_buffer_[CLIENT_RECEIVE_BUFFER_SZ];
+    char new_msg_buffer_[CLIENT_RECEIVE_BUFFER_SZ];
 
     bool getAuthRespond();
     bool getFindRespond();
     std::vector<FetchedMessage> getAllSendersMessagesResponse();
     std::vector<QString> getAllSendersIdRespond();
-    //std::multimap<int, std::pair<QString, QString>> getAllMsgRespond();
 
     void setupAddrInfoHints(addrinfo& hints);
     void parseFindRespond();
+
+    void acceptingNewMessages();
 
 public:
     ChatClient();
@@ -42,15 +43,12 @@ public:
     bool authorizeUser(const char* username, const char* password, int auth_type);
 
     const UserInfo&   getClientInfo();
-    void              prepareReceiverID(const char* id);
     void              sendMessage(const char* text);
     bool              findUser(const char* user_info, bool is_username);
     const UserInfo*   getFoundUser();
 
     std::vector<UserInfo> getAllSendersInfo(bool new_flag);
     std::vector<FetchedMessage> getAllSenderMessages();
-   /* std::multimap<int, std::pair<QString, QString>> getNewMessages();
-    std::multimap<int, std::pair<QString, QString>> getAllMessages();*/
 };
 
 #endif // CHATCLIENT_H

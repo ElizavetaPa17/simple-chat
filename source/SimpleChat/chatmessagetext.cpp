@@ -1,9 +1,7 @@
 #include "chatmessagetext.h"
 
 #include <QFontMetrics>
-
-const int FIXED_WIDTH = 500;
-const int CHARS_IN_LINE = 52;
+#include "constants.h"
 
 ChatMessageText::ChatMessageText(QWidget *parent)
     : QTextEdit(parent)
@@ -41,12 +39,8 @@ void ChatMessageText::setupDesign(int align_type) {
     size_t font_width = font_metrics.size(0, toPlainText()).width();
     size_t font_height = font_metrics.height();
 
-    double chars_in_line = toPlainText().size() / (static_cast<double>(font_width) / FIXED_WIDTH);
+    double chars_in_line = toPlainText().size() / (static_cast<double>(font_width) / FIXED_MSG_WIDTH);
     int line_number = toPlainText().size() / chars_in_line + 0.5;
-    qDebug() << "size:" << toPlainText().size();
-    qDebug() << "chars line:" << chars_in_line;
-    qDebug() << "font width" << font_width;
-    qDebug() << "line number:" << line_number;
     setFixedHeight(font_height * (line_number+2));
 
     setReadOnly(true);

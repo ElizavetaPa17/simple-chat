@@ -16,6 +16,9 @@ const int USRNM_BUFFER_SIZE = 21;
 const int DATE_BUFFER_SIZE  = 20;
 const int INVALID_SOCKET    = -1;
 
+const int FIXED_MSG_WIDTH = 500;
+const int CHARS_IN_LINE = 52;
+
 extern const char* TEXT_END_IDENTIF;
 
 extern const char* SERVER_ADDRESS;

@@ -170,9 +170,12 @@ bool DbUtility::addUser(const char *username, const char *password) {
 
 bool DbUtility::addMessage(const char *from_id, const char *to_id, const char *date, const char *text) {
     static std::string buffer;
+    static char escape_buffer[MAX_MSG_SIZE*2 + 1];
+    
+    mysql_escape_string(escape_buffer, text, strlen(text));
     fprintf(stderr, "D: to_id: %s\n", to_id);
     buffer = std::string("INSERT INTO messages (from_id, to_id, send_date, msg_text) VALUES"
-                         "('") + from_id + "','" + to_id + "','" + date + "','" + text + "')";
+                         "('") + from_id + "','" + to_id + "','" + date + "','" + escape_buffer + "')";
 
     if (mysql_query(sql_handle_, buffer.c_str())) {
         fprintf(stderr, "D: Failed to add the message: %s\n", mysql_error(sql_handle_));
@@ -310,7 +313,8 @@ std::vector<FetchedMessage> DbUtility::getAllMessages(const char *id, bool new_f
     static std::string buffer;
     
     if (new_flag) {
-        buffer = std::string("SELECT * FROM messages WHERE to_id=\"") + id + "\" AND is_new=\"1\"";
+        buffer = std::string("SELECT * FROM messages WHERE (to_id=\"") + id + "\" OR from_id=\"" + id + "\")" 
+                             "AND is_new=\"1\" ORDER BY send_date";
     } else {
         buffer = std::string("SELECT * FROM messages WHERE to_id=\"") + id + "\"";
     }
@@ -338,9 +342,13 @@ std::vector<std::string> DbUtility::getAllSendersId(const char *to_id, bool new_
     static std::string buffer;
     
     if (new_flag) {
-        buffer = std::string("SELECT DISTINCT from_id FROM messages WHERE to_id=\"") + to_id + "\" AND is_new=\"1\"";
+        buffer = std::string("SELECT from_id from messages where to_id=\"") + to_id + "\""
+                             "UNION "
+                             "SELECT to_id from messages where from_id=\"" + to_id + "\"";
     } else {
-        buffer = std::string("SELECT DISTINCT from_id FROM messages WHERE to_id=\"") + to_id + "\"";
+        buffer = std::string("SELECT from_id from messages where to_id=\"") + to_id + "\""
+                             "UNION "
+                             "SELECT to_id from messages where from_id=\"" + to_id + "\"";
     }
 
     if (mysql_query(sql_handle_, buffer.c_str())) {
@@ -367,7 +375,8 @@ std::vector<FetchedMessage> DbUtility::getMessagesCertId(const char* to_id, cons
     static std::string buffer;
     
     buffer = std::string("SELECT * FROM messages WHERE to_id=\"") + to_id + "\" AND from_id=\"" 
-                         + from_id + "\" OR to_id=\"" + from_id + "\" AND from_id=\"" + to_id + "\"";
+                         + from_id + "\" OR to_id=\"" + from_id + "\" AND from_id=\"" + to_id + "\""
+                         "ORDER BY send_date";
 
     if (mysql_query(sql_handle_, buffer.c_str())) {
         fprintf(stderr, "D: Failed to get new messages: %s\n", mysql_error(sql_handle_));

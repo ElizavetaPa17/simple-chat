@@ -19,12 +19,14 @@ public:
     ~ChatArea();
 
     void setMessages(std::vector<FetchedMessage>& messages, const char* client_id);
+    void addMessage(const QString& text, bool is_outgoing);
 
 private:
     Ui::ChatArea *ui;
 
     void setupDesign();
     void clearArea();
+    void insertEmptyLabel(int align_type);
 };
 
 #endif // CHATAREA_H

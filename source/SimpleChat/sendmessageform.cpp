@@ -23,5 +23,6 @@ void SendMessageForm::sltSendMessage() {
         return;
     } else {
         emit sgnlSendMessage(ui->messageText->toPlainText().toUtf8().toStdString().c_str());
+        ui->messageText->clear();
     }
 }
