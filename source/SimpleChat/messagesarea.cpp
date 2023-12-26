@@ -25,16 +25,23 @@ void MessagesArea::clearArea() {
     }
 }
 
-void MessagesArea::displayMessages() {
-    static MessageWidget* wdgt;
+void MessagesArea::addNewMessage(std::vector<UserInfo>& new_senders) {
+    MessageWidget* msg_widget = nullptr;
+    int id = 0;
 
-    clearArea();
-    widget()->layout()->setAlignment(Qt::AlignTop);
+    for (auto& item: new_senders) {
+        id = QString(item.id).toInt();
 
-    wdgt = new MessageWidget("id", "username", "date", this);
-    connect(wdgt, &MessageWidget::clicked, this, &MessagesArea::sltOpenChat);
+        if (users_chat_id_.contains(id)) {
+            continue;
+        }
 
-    widget()->layout()->addWidget(wdgt);
+        users_chat_id_.insert(id);
+
+        msg_widget = new MessageWidget(item.id, item.username, "date");
+        connect(msg_widget, &MessageWidget::clicked, this, &MessagesArea::sltOpenChat);
+        widget()->layout()->addWidget(msg_widget);
+    }
 }
 
 void MessagesArea::resetMessages(std::vector<UserInfo>& senders) {

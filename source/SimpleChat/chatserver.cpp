@@ -133,6 +133,8 @@ void ChatServer::parseReadData(char* data, socket_t sngl_socket, ClientInfo& cli
         handleSendConnection(data, sngl_socket);
     } else if (strstr(data, GTASND_TOID_CONNECTION)) {
         handleGetSendersInfoConnection(data, sngl_socket, false);
+    } else if (strstr(data, GTNSND_TOID_CONNECTION)) {
+        handleGetSendersInfoConnection(data, sngl_socket, true);
     } else if (GTAMS_FRID_CONNECTION) {
         handleGetMessagesFromIdConnection(data, sngl_socket);
     } else {
@@ -182,7 +184,7 @@ void ChatServer::handleRegistrConnection(char* data, socket_t sngl_socket, Clien
 
             char message[30]{};
             sprintf(message, "DATA: \nid: %s\n", user_info->id);
-            sendRespond(message, OK_RSPND, sngl_socket);
+            sendRespond(message, AUTH_SUCCS_RSPND, sngl_socket);
         }
     }
 }
@@ -263,6 +265,7 @@ void ChatServer::handleSendConnection(char* data, socket_t sngl_socket) {
 
     date = strstr(data, "DATE: ") + sizeof("DATE: ")-1;
     date[strstr(date, "\n")-date] = '\0';
+
     
     database_.addMessage(from_id, to_id, date, text);
 }
@@ -407,7 +410,6 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
 
     if (msg) {
         size_t msg_sz = strlen(msg);
-        fprintf(stderr, "msg_sz: %ld\n", msg_sz);
         if (SERVER_RESPOND_BUFFER_SZ - offset - msg_sz < 2) {
             fprintf(stderr, "S: Failed to send respond: message is too long.");
             return false;
@@ -418,7 +420,6 @@ bool ChatServer::sendRespond(const char* msg, RespondCode repsond, socket_t sngl
     } 
 
     buffer[offset] = '\0';
-    fprintf(stderr, "\n%s\n", buffer);
     if (send(sngl_socket, buffer, offset+1, 0) < 0) {
         fprintf(stderr, "S: Failed to send success respond: %d\n", errno);
         return false;

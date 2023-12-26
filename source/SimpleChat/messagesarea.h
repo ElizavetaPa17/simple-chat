@@ -15,7 +15,7 @@ public:
     MessagesArea(QWidget* parent = nullptr);
     ~MessagesArea();
 
-    void displayMessages();
+    void addNewMessage(std::vector<UserInfo>& new_senders);
     void resetMessages(std::vector<UserInfo>& senders);
     void displayFoundUser(const char* id, const char* username);
     void displayNotFoundUser();

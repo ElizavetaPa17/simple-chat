@@ -173,7 +173,6 @@ bool DbUtility::addMessage(const char *from_id, const char *to_id, const char *d
     static char escape_buffer[MAX_MSG_SIZE*2 + 1];
     
     mysql_escape_string(escape_buffer, text, strlen(text));
-    fprintf(stderr, "D: to_id: %s\n", to_id);
     buffer = std::string("INSERT INTO messages (from_id, to_id, send_date, msg_text) VALUES"
                          "('") + from_id + "','" + to_id + "','" + date + "','" + escape_buffer + "')";
 
@@ -182,10 +181,6 @@ bool DbUtility::addMessage(const char *from_id, const char *to_id, const char *d
         return false;
     }
 
-    fprintf(stderr, "D: success");
-    return true;
-
-    fprintf(stderr, "from: %s\n, to: %s\n, date: %s, text: %s\n", from_id, to_id, date, text);
     return true;
 }
 
@@ -341,14 +336,13 @@ std::vector<FetchedMessage> DbUtility::getAllMessages(const char *id, bool new_f
 std::vector<std::string> DbUtility::getAllSendersId(const char *to_id, bool new_flag) {
     static std::string buffer;
     
+    
     if (new_flag) {
-        buffer = std::string("SELECT from_id from messages where to_id=\"") + to_id + "\""
-                             "UNION "
-                             "SELECT to_id from messages where from_id=\"" + to_id + "\"";
+        buffer = std::string("SELECT DISTINCT from_id from messages where to_id=") + to_id + " AND is_new=1";
     } else {
-        buffer = std::string("SELECT from_id from messages where to_id=\"") + to_id + "\""
+        buffer = std::string("SELECT from_id from messages where to_id=") + to_id + " "
                              "UNION "
-                             "SELECT to_id from messages where from_id=\"" + to_id + "\"";
+                             "SELECT to_id from messages where from_id=" + to_id;
     }
 
     if (mysql_query(sql_handle_, buffer.c_str())) {
@@ -363,6 +357,13 @@ std::vector<std::string> DbUtility::getAllSendersId(const char *to_id, bool new_
             while ((row = mysql_fetch_row(result))) {
                 messages.push_back(std::string(row[0]));
             }
+        }
+
+        if (new_flag && mysql_query(sql_handle_, (std::string("UPDATE messages "
+                                                  "SET is_new=0 "
+                                                  "WHERE to_id=") + to_id + " AND is_new=1").c_str())) 
+        {
+            fprintf(stderr, "D: Failed to update new messages: %s\n", mysql_error(sql_handle_));
         }
 
         mysql_free_result(result);

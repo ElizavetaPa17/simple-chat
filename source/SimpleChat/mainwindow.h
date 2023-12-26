@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
 
 #include "authentificationwidget.h"
 #include "chatclient.h"
@@ -24,12 +25,16 @@ public:
 private:
     Ui::MainWindow *main_window_ui_;
     AuthentificationWidget* authent_widget_;
+    QTimer timer_new_senders_;
+    QTimer timer_new_msgs_;
 
     void setupDesign();
     void setupConnection();
 
     void handleSuccessAuthentification(int auth_type);
     void handleFailedAuthentification();
+
+    void handleNewSenders();
 
 private slots:
     void sltSendAuthInfo(const char* username, const char* password, int auth_type);

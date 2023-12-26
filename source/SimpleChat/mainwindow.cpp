@@ -43,6 +43,7 @@ void MainWindow::setupConnection() {
     connect(main_window_ui_->messagesArea,      &MessagesArea::sgnlOpenChat,       this, &MainWindow::sltOpenChat);
     connect(main_window_ui_->searchWidget,      &SearchForm::sgnlFindUser,         this, &MainWindow::sltFindUser);
     connect(main_window_ui_->sendMessageWidget, &SendMessageForm::sgnlSendMessage, this, &MainWindow::sltSendMessage);
+    connect(&timer_new_senders_,                &QTimer::timeout,                  this, &MainWindow::handleNewSenders);
 }
 
 void MainWindow::handleSuccessAuthentification(int auth_type) {
@@ -61,11 +62,24 @@ void MainWindow::handleFailedAuthentification() {
     authent_widget_->handleFailedAuthentification();
 }
 
+void MainWindow::handleNewSenders() {
+    static std::vector<UserInfo> new_senders;
+
+    new_senders = client_.getAllSendersInfo(true);
+    for (auto& item : new_senders) {
+        qDebug() << item.id;
+    }
+
+    main_window_ui_->messagesArea->addNewMessage(new_senders);
+}
+
 void MainWindow::sltSendAuthInfo(const char* username, const char* password, int auth_type) {
     if (client_.authorizeUser(username, password, auth_type)) {
         handleSuccessAuthentification(auth_type);
         std::vector<UserInfo> senders_id = client_.getAllSendersInfo(false);
+
         main_window_ui_->messagesArea->resetMessages(senders_id);
+        timer_new_senders_.start(1500);
     } else {
         handleFailedAuthentification();
     }
@@ -82,7 +96,6 @@ void MainWindow::sltOpenChat(const char* id, const char* username) {
     main_window_ui_->chatUserUsername->setText("Chat with " + QString(username));
 
     std::vector<FetchedMessage> messages = client_.getAllSenderMessages();
-
     main_window_ui_->chatArea->setMessages(messages, client_.getClientInfo().id);
 }
 

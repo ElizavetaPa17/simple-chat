@@ -36,6 +36,7 @@ extern const char* SEND_CONNECTION;
 
 extern const char* GTAMS_FRID_CONNECTION;
 extern const char* GTASND_TOID_CONNECTION;
+extern const char* GTNSND_TOID_CONNECTION;
 
 extern const char* OK_SRVR_RESPOND;
 extern const char* ERR_SRVR_RESPOND;

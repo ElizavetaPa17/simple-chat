@@ -6,6 +6,10 @@
 #include <map>
 #include <utility>
 
+//#include <mutex>
+//std::mutex find_user_mutex;
+//std::mutex sndr_info_mutex;
+
 ChatClient::ChatClient()
     : client_socket_(-1)
 {
@@ -82,7 +86,7 @@ void ChatClient::sendMessage(const char* text) {
     message += "SENDER_ID: " + QString(client_info_.id) + "\n";
     message += "RECEIVER_ID: " + QString(find_user_info_.id) + "\n";
     message += "DATA: \n";
-    message += "Text: " + QString(text);
+    message += "Text: " + QString(text) + '\0';
 
     fprintf(stdout, "C: Sending SEND request...\n");
     if (send(client_socket_, message.toStdString().c_str(), message.size(), 0) < 0) {
@@ -117,16 +121,14 @@ void ChatClient::acceptingServerRespond() {
         }
     }
 }
-/*
-    FindConnection - found, not_found
-    SendersInfoConnection - sender_info
-    GetMessagesFromCertIdConnection - messages
-*/
 
+// fix return value
 void ChatClient::handleServerRespond() {
-   // if (strstr(input_buffer_, )) {
-
-   //}
+    if (strstr(input_buffer_, SND_INFO_SRVR_RESPOND) || strstr(input_buffer_, END_SND_INFO_SRVR_RESPOND)) {
+        getAllSendersIdRespond();
+    } else if (strstr(input_buffer_, MSG_SRVR_RESPOND) || strstr(input_buffer_, END_MSG_SRVR_RESPOND)) {
+        getAllSendersMessagesResponse();
+    }
 }
 
 bool ChatClient::getAuthRespond() {
@@ -212,7 +214,12 @@ const UserInfo* ChatClient::getFoundUser() {
 
 std::vector<UserInfo> ChatClient::getAllSendersInfo(bool new_flag) {
     QString message;
-    message += QString(GTASND_TOID_CONNECTION) + "\n";
+
+    if (new_flag) {
+        message += QString(GTNSND_TOID_CONNECTION) + "\n";
+    } else {
+        message += QString(GTASND_TOID_CONNECTION) + "\n";
+    }
     message += QString("DATA: ");
     message += QString("Receiver_id: ") + client_info_.id + '\n';
 
@@ -316,6 +323,5 @@ std::vector<FetchedMessage> ChatClient::getAllSendersMessagesResponse() {
         }
     }
 
-    fprintf(stderr, "size: %ld\n", messages.size());
     return messages;
 }
